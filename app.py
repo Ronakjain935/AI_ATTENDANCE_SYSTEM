@@ -1,4 +1,3 @@
-
 import streamlit as st
 
 from src.screens.home_screen import home_screen
@@ -33,4 +32,17 @@ def main():
             st.rerun()
         if st.session_state.get('is_logged_in') and st.session_state.get('user_role') == 'student':
             auto_enroll_dialog(join_code)
-main()
+
+# Top-level WSGI entrypoint variables for Vercel Python Serverless Runtime
+def handler(environ, start_response=None):
+    if start_response:
+        start_response('200 OK', [('Content-Type', 'text/html')])
+    return [b"SnapClass AI Attendance Platform"]
+
+app = handler
+application = handler
+
+if __name__ == '__main__':
+    main()
+else:
+    main()
