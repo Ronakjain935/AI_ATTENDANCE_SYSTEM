@@ -24,7 +24,6 @@ def main():
         case None:
             home_screen()
 
-
     join_code = st.query_params.get('join-code')
     if join_code:
         if st.session_state.login_type != 'student':
@@ -33,16 +32,5 @@ def main():
         if st.session_state.get('is_logged_in') and st.session_state.get('user_role') == 'student':
             auto_enroll_dialog(join_code)
 
-# Top-level WSGI entrypoint variables for Vercel Python Serverless Runtime
-def handler(environ, start_response=None):
-    if start_response:
-        start_response('200 OK', [('Content-Type', 'text/html')])
-    return [b"SnapClass AI Attendance Platform"]
-
-app = handler
-application = handler
-
 if __name__ == '__main__':
-    main()
-else:
     main()
