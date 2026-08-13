@@ -1,9 +1,9 @@
+--extra-index-url https://download.pytorch.org/whl/cpu
 streamlit
 numpy
 pandas
 scikit-learn
-dlib; sys_platform != 'win32'
-dlib-bin; sys_platform == 'win32'
+dlib-bin
 git+https://github.com/ageitgey/face_recognition_models
 setuptools<70.0.0
 supabase
