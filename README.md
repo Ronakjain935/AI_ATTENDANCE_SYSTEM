@@ -162,5 +162,5 @@ SnapClass uses 5 core relational tables in Supabase:
 
 ## 👤 Author & Acknowledgments
 
-Created with ❤️ by **Ronak Jain**  
+Created with ⚡ by **Ronak Jain**  
 GitHub: [@Ronakjain935](https://github.com/Ronakjain935)

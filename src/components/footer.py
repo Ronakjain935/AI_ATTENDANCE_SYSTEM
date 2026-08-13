@@ -9,7 +9,7 @@ def footer_home():
                 <span style="font-weight: 600; color: #E2E8F0; font-size: 0.88rem;">Automated Smart Attendance Platform</span>
             </div>
             <p style="color: #94A3B8; font-size: 0.8rem; font-weight: 500; margin: 4px 0 0 0;">
-                🔒 Powered by Deep Facial & Speaker Recognition AI
+                🔒 Powered by Deep Facial & Speaker Recognition AI • Built with ⚡ by Ronak Jain
             </p>
         </div>
     """, unsafe_allow_html=True)
@@ -24,7 +24,7 @@ def footer_dashboard():
                 <span style="font-weight: 600; color: #334155; font-size: 0.88rem;">Automated Smart Attendance Platform</span>
             </div>
             <p style="color: #64748B; font-size: 0.8rem; font-weight: 500; margin: 4px 0 0 0;">
-                🔒 Encrypted & Verified Attendance Verification
+                🔒 Encrypted & Verified Attendance Verification • Built with ⚡ by Ronak Jain
             </p>
         </div>
     """, unsafe_allow_html=True)
