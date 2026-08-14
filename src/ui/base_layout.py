@@ -4,7 +4,7 @@ def style_background_home():
     st.markdown("""
         <style>
             .stApp {
-                background: linear-gradient(135deg, #0F172A 0%, #1E1B4B 45%, #312E81 100%) !important;
+                background: linear-gradient(135deg, #090D16 0%, #0F172A 40%, #1E1B4B 75%, #312E81 100%) !important;
                 background-attachment: fixed !important;
                 color: #ffffff !important;
             }
@@ -16,8 +16,8 @@ def style_background_dashboard():
     st.markdown("""
         <style>
             .stApp {
-                background: radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.08) 0%, transparent 40%),
-                            radial-gradient(circle at 90% 80%, rgba(244, 63, 94, 0.06) 0%, transparent 40%),
+                background: radial-gradient(circle at 12% 15%, rgba(99, 102, 241, 0.09) 0%, transparent 45%),
+                            radial-gradient(circle at 88% 85%, rgba(16, 185, 129, 0.08) 0%, transparent 45%),
                             #F8FAFC !important;
                 background-attachment: fixed !important;
                 color: #0F172A !important;
@@ -42,6 +42,22 @@ def style_base_layout():
                 color: #0F172A !important;
             }
 
+            /* Custom Webkit Scrollbar */
+            ::-webkit-scrollbar {
+                width: 10px;
+                height: 10px;
+            }
+            ::-webkit-scrollbar-track {
+                background: rgba(15, 23, 42, 0.05);
+            }
+            ::-webkit-scrollbar-thumb {
+                background: rgba(99, 102, 241, 0.25);
+                border-radius: 9999px;
+            }
+            ::-webkit-scrollbar-thumb:hover {
+                background: rgba(99, 102, 241, 0.5);
+            }
+
             /* Protect Streamlit Material Icons */
             [data-testid="stIconMaterial"], [data-testid="stIconMaterial"] * {
                 font-family: 'Material Symbols Rounded', 'Material Symbols Outlined' !important;
@@ -57,9 +73,9 @@ def style_base_layout():
             }
 
             .block-container {
-                padding-top: 1.8rem !important;
+                padding-top: 1.5rem !important;
                 padding-bottom: 2.5rem !important;
-                max-width: 1120px !important;
+                max-width: 1150px !important;
             }
 
             /* Bespoke High-Contrast Labels */
@@ -80,12 +96,12 @@ def style_base_layout():
                 padding: 12px 16px !important;
                 font-size: 1rem !important;
                 font-weight: 500 !important;
-                box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02) !important;
-                transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+                box-shadow: 0 2px 8px rgba(99, 102, 241, 0.04) !important;
+                transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1) !important;
             }
             .stTextInput input:focus, .stTextArea textarea:focus {
                 border-color: #6366F1 !important;
-                box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15) !important;
+                box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.18) !important;
             }
             .stTextInput input::placeholder, .stTextArea textarea::placeholder {
                 color: #94A3B8 !important;
@@ -99,8 +115,8 @@ def style_base_layout():
                 border: 2px solid rgba(99, 102, 241, 0.25) !important;
                 min-height: 50px !important;
                 padding-left: 8px !important;
-                box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02) !important;
-                transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+                box-shadow: 0 2px 8px rgba(99, 102, 241, 0.04) !important;
+                transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1) !important;
             }
             div[data-baseweb="select"] span, div[data-baseweb="select"] div {
                 color: #0F172A !important;
@@ -111,7 +127,7 @@ def style_base_layout():
             /* Dropdown Popover Menu */
             div[data-baseweb="popover"], div[data-baseweb="menu"], ul[role="listbox"] {
                 background-color: #FFFFFF !important;
-                border-radius: 16px !important;
+                border-radius: 18px !important;
                 border: 1px solid rgba(99, 102, 241, 0.2) !important;
                 box-shadow: 0 20px 40px -10px rgba(15, 23, 42, 0.18) !important;
                 padding: 6px !important;
@@ -120,7 +136,7 @@ def style_base_layout():
                 color: #0F172A !important;
                 background-color: #FFFFFF !important;
                 font-weight: 600 !important;
-                border-radius: 10px !important;
+                border-radius: 12px !important;
                 padding: 10px 14px !important;
                 margin-bottom: 2px !important;
             }
@@ -131,11 +147,17 @@ def style_base_layout():
 
             /* File Uploader Container */
             [data-testid="stFileUploader"] {
-                background: rgba(255, 255, 255, 0.9) !important;
-                border-radius: 20px !important;
+                background: rgba(255, 255, 255, 0.95) !important;
+                border-radius: 24px !important;
                 border: 2px dashed rgba(99, 102, 241, 0.35) !important;
-                padding: 1.4rem !important;
-                box-shadow: 0 4px 12px rgba(99, 102, 241, 0.05) !important;
+                padding: 1.5rem !important;
+                box-shadow: 0 4px 16px rgba(99, 102, 241, 0.06) !important;
+                transition: all 0.2s ease !important;
+            }
+            [data-testid="stFileUploader"]:hover {
+                border-color: #6366F1 !important;
+                background: #FFFFFF !important;
+                box-shadow: 0 8px 24px rgba(99, 102, 241, 0.12) !important;
             }
             [data-testid="stFileUploader"] * {
                 color: #0F172A !important;
@@ -159,11 +181,11 @@ def style_base_layout():
                 cursor: pointer !important;
             }
             .stButton > button:hover {
-                transform: translateY(-3px) scale(1.015) !important;
-                box-shadow: 0 12px 25px -5px rgba(79, 70, 229, 0.3) !important;
+                transform: translateY(-3px) scale(1.02) !important;
+                box-shadow: 0 14px 28px -4px rgba(79, 70, 229, 0.35) !important;
             }
             .stButton > button:active {
-                transform: translateY(-1px) scale(0.99) !important;
+                transform: translateY(-1px) scale(0.98) !important;
             }
 
             /* Primary Button (Royal Indigo Gradient) */
@@ -171,7 +193,7 @@ def style_base_layout():
             .stButton > button[data-testid="stBaseButton-primary"] {
                 background: linear-gradient(135deg, #4F46E5 0%, #6366F1 100%) !important;
                 color: #FFFFFF !important;
-                box-shadow: 0 8px 20px -4px rgba(79, 70, 229, 0.4) !important;
+                box-shadow: 0 8px 22px -4px rgba(79, 70, 229, 0.42) !important;
                 border: none !important;
             }
             .stButton > button[kind="primary"] *,
@@ -179,12 +201,12 @@ def style_base_layout():
                 color: #FFFFFF !important;
             }
 
-            /* Secondary Button (Warm Rose Coral Gradient) */
+            /* Secondary Button (Emerald Teal Gradient) */
             .stButton > button[kind="secondary"],
             .stButton > button[data-testid="stBaseButton-secondary"] {
-                background: linear-gradient(135deg, #F43F5E 0%, #FB7185 100%) !important;
+                background: linear-gradient(135deg, #059669 0%, #10B981 100%) !important;
                 color: #FFFFFF !important;
-                box-shadow: 0 8px 20px -4px rgba(244, 63, 94, 0.35) !important;
+                box-shadow: 0 8px 22px -4px rgba(16, 185, 129, 0.4) !important;
                 border: none !important;
             }
             .stButton > button[kind="secondary"] *,
@@ -192,18 +214,18 @@ def style_base_layout():
                 color: #FFFFFF !important;
             }
 
-            /* Tertiary Button (Artisanal Frosted Card Button) */
+            /* Tertiary Button (Artisanal Glass Card Button) */
             .stButton > button[kind="tertiary"],
             .stButton > button[data-testid="stBaseButton-tertiary"] {
                 background: #FFFFFF !important;
                 color: #0F172A !important;
                 border: 1.5px solid #E2E8F0 !important;
-                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04) !important;
+                box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04) !important;
             }
             .stButton > button[kind="tertiary"]:hover {
                 border-color: #6366F1 !important;
                 background: #F8FAFC !important;
-                box-shadow: 0 8px 20px rgba(99, 102, 241, 0.15) !important;
+                box-shadow: 0 8px 22px rgba(99, 102, 241, 0.18) !important;
             }
             .stButton > button[kind="tertiary"] *,
             .stButton > button[data-testid="stBaseButton-tertiary"] * {
@@ -231,7 +253,7 @@ def style_base_layout():
             /* --- DIALOG & MODAL CRAFTED GLASS DESIGN --- */
             div[data-baseweb="modal"] {
                 background-color: rgba(15, 23, 42, 0.75) !important;
-                backdrop-filter: blur(8px) !important;
+                backdrop-filter: blur(10px) !important;
             }
 
             div[data-baseweb="modal"] > div,
@@ -242,7 +264,7 @@ def style_base_layout():
                 border-radius: 28px !important;
                 border: 2px solid rgba(99, 102, 241, 0.2) !important;
                 box-shadow: 0 30px 70px -10px rgba(15, 23, 42, 0.45) !important;
-                padding: 2rem !important;
+                padding: 2.2rem !important;
                 overflow: visible !important;
             }
 
@@ -260,13 +282,13 @@ def style_base_layout():
             [data-testid="stDialog"] h2 {
                 color: #0F172A !important;
                 font-family: 'Outfit', sans-serif !important;
-                font-size: 1.55rem !important;
+                font-size: 1.6rem !important;
                 font-weight: 800 !important;
                 margin: 0 !important;
                 line-height: 1.25 !important;
             }
 
-            /* High Contrast Body Text in Modals (EXCEPT inside buttons) */
+            /* High Contrast Body Text in Modals */
             div[role="dialog"] h1, div[role="dialog"] h3, div[role="dialog"] h4, div[role="dialog"] h5, div[role="dialog"] h6,
             div[data-baseweb="modal"] h1, div[data-baseweb="modal"] h3, div[data-baseweb="modal"] h4, div[data-baseweb="modal"] h5, div[data-baseweb="modal"] h6 {
                 color: #0F172A !important;
@@ -290,7 +312,7 @@ def style_base_layout():
                 color: #0F172A !important;
                 background-color: #F1F5F9 !important;
                 border-radius: 50% !important;
-                transition: transform 0.15s ease !important;
+                transition: transform 0.2s ease !important;
             }
             div[data-baseweb="modal"] button[aria-label="Close"]:hover {
                 transform: scale(1.1) rotate(90deg) !important;
@@ -305,9 +327,9 @@ def style_base_layout():
             /* Dataframe Table Styling */
             [data-testid="stDataFrame"] {
                 background-color: #FFFFFF !important;
-                border-radius: 16px !important;
+                border-radius: 18px !important;
                 border: 1px solid #E2E8F0 !important;
-                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02) !important;
+                box-shadow: 0 4px 14px rgba(0, 0, 0, 0.03) !important;
             }
 
             /* Code Blocks */
