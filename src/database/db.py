@@ -121,12 +121,45 @@ def delete_attendance_session(timestamp_str, subject_id):
     response = supabase.table('attendance_logs').delete().eq('timestamp', timestamp_str).eq('subject_id', subject_id).execute()
     return response.data
 
+
 def delete_all_attendance_for_teacher(teacher_id):
-    teacher_subjects = supabase.table('subjects').select('subject_id').eq('teacher_id', teacher_id).execute()
-    if teacher_subjects.data:
-        sids = [s['subject_id'] for s in teacher_subjects.data]
-        response = supabase.table('attendance_logs').delete().in_('subject_id', sids).execute()
-        return response.data
+    try:
+        teacher_subjects = supabase.table('subjects').select('subject_id').eq('teacher_id', teacher_id).execute()
+        if teacher_subjects.data:
+            sids = [s['subject_id'] for s in teacher_subjects.data]
+            response = supabase.table('attendance_logs').delete().in_('subject_id', sids).execute()
+            return response.data
+    except Exception:
+        pass
     return []
+
+
+def delete_subject(subject_id):
+    try:
+        response = supabase.table('subjects').delete().eq('subject_id', subject_id).execute()
+        return response.data
+    except Exception as e:
+        return None
+
+
+def claim_subject(subject_code, new_teacher_id):
+    try:
+        response = supabase.table('subjects').update({'teacher_id': new_teacher_id}).eq('subject_code', subject_code.strip()).execute()
+        return response.data
+    except Exception as e:
+        return None
+
+
+def get_all_existing_subjects():
+    try:
+        response = supabase.table('subjects').select('*, teachers(name, username), subject_students(count)').execute()
+        subjects = response.data or []
+        for sub in subjects:
+            sub['total_students'] = sub.get("subject_students", [{}])[0].get('count', 0) if sub.get('subject_students') else 0
+            sub.pop('subject_students', None)
+        return subjects
+    except Exception as e:
+        return []
+
 
 

@@ -12,7 +12,8 @@ from src.database.db import (
     check_teacher_exists, create_teacher, teacher_login, 
     get_teacher_subjects, get_attendance_for_teacher,
     delete_attendance_session, delete_all_attendance_for_teacher,
-    get_enrolled_students_for_subject
+    get_enrolled_students_for_subject,
+    delete_subject, claim_subject, get_all_existing_subjects
 )
 from src.components.dialog_create_subject import create_subject_dialog
 from src.components.dialog_share_subject import share_subject_dialog
@@ -197,9 +198,17 @@ def teacher_tab_manage_subjects():
                 ("🫂", "Students", sub['total_students']),
                 ("🕰️", "Classes", sub['total_classes']),
             ]
-            def share_btn():
-                if st.button(f"🔗 Share Code: {sub['name']}", key=f"share_{sub['subject_code']}", type='tertiary', use_container_width=True):
-                    share_subject_dialog(sub['name'], sub['subject_code'])
+            def action_buttons():
+                bcol1, bcol2 = st.columns(2)
+                with bcol1:
+                    if st.button(f"🔗 Share Code: {sub['name']}", key=f"share_{sub['subject_code']}", type='tertiary', use_container_width=True):
+                        share_subject_dialog(sub['name'], sub['subject_code'])
+                with bcol2:
+                    if st.button("🗑️ Delete Subject", key=f"del_{sub['subject_id']}", type='secondary', use_container_width=True):
+                        delete_subject(sub['subject_id'])
+                        st.toast(f"Deleted {sub['name']} successfully!")
+                        time.sleep(1)
+                        st.rerun()
                 st.write("")
 
             subject_card(
@@ -207,7 +216,7 @@ def teacher_tab_manage_subjects():
                 code=sub['subject_code'],
                 section=sub['section'],
                 stats=stats,
-                footer_callback=share_btn
+                footer_callback=action_buttons
             )
 
             with st.expander(f"👥 View Enrolled Students ({sub['total_students']})", expanded=False):
@@ -235,7 +244,27 @@ def teacher_tab_manage_subjects():
                     st.info(f"No students enrolled in {sub['name']} yet. Click 'Share Code' above to invite students!")
             st.write("")
     else:
-        st.info("NO SUBJECTS FOUND. CREATE ONE ABOVE")
+        st.info("NO SUBJECTS FOUND UNDER YOUR ACCOUNT. CREATE ONE ABOVE OR CLAIM AN EXISTING ONE BELOW")
+
+    # List any other existing subjects in database (e.g., from previous logins or other teachers)
+    all_subs = get_all_existing_subjects()
+    other_subs = [s for s in all_subs if s.get('teacher_id') != teacher_id]
+    if other_subs:
+        st.markdown("<div style='margin-top: 1.5rem;'></div>", unsafe_allow_html=True)
+        with st.expander(f"🔍 View Other Existing Subjects in System ({len(other_subs)})", expanded=True):
+            st.markdown("<p style='color: #475569; font-size: 0.92rem;'>The subjects below already exist in the database (e.g. from previous tests or logins). You can <b>Claim / Transfer</b> them to your current login with 1 click:</p>", unsafe_allow_html=True)
+            for oth in other_subs:
+                c_info, c_btn = st.columns([3, 1.2], vertical_alignment='center')
+                with c_info:
+                    owner = oth.get('teachers', {}).get('name', 'Another account') if oth.get('teachers') else 'Another account'
+                    st.markdown(f"📚 **{oth['name']}** (`{oth['subject_code']}`) — Section: {oth.get('section', 'N/A')} | Owner: *{owner}* | Enrolled: **{oth.get('total_students', 0)} students**")
+                with c_btn:
+                    if st.button("🔄 Claim to My Account", key=f"claim_other_{oth['subject_id']}", type="primary", use_container_width=True):
+                        claim_subject(oth['subject_code'], teacher_id)
+                        st.toast(f"Transferred '{oth['name']}' to your account! 🎉")
+                        time.sleep(1)
+                        st.rerun()
+                st.divider()
 
 
 def teacher_tab_attendance_records():
