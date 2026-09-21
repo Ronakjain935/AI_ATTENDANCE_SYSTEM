@@ -2,6 +2,7 @@ import streamlit as st
 from PIL import Image
 import numpy as np
 import time
+import textwrap
 
 from src.ui.base_layout import style_background_dashboard, style_base_layout
 from src.components.header import header_dashboard
@@ -19,29 +20,42 @@ def student_dashboard():
     student_data = st.session_state.student_data
     student_id = student_data['student_id']
 
-    c1, c2 = st.columns(2, vertical_alignment='center', gap='large')
-    with c1:
+    top_col1, top_col2 = st.columns([1.5, 1], vertical_alignment='center')
+    with top_col1:
         header_dashboard()
-    with c2:
-        st.subheader(f"Welcome, {student_data['name']}")
-        if st.button("Logout 🚪", type='secondary', key='loginbackbtn'):
-            st.session_state['is_logged_in'] = False
-            if 'student_data' in st.session_state:
-                del st.session_state.student_data
-            st.rerun()
+    with top_col2:
+        u_col1, u_col2 = st.columns([2, 1], vertical_alignment='center')
+        with u_col1:
+            st.markdown(textwrap.dedent(f"""\
+<div style="text-align: right;">
+<span style="font-size: 0.8rem; color: #64748B; font-weight: 500;">Student Account</span>
+<div style="font-size: 0.95rem; font-weight: 700; color: #0F172A; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{student_data['name']}</div>
+</div>\
+"""), unsafe_allow_html=True)
+        with u_col2:
+            if st.button("Log Out", type='secondary', key='student_logout_btn', use_container_width=True):
+                st.session_state['is_logged_in'] = False
+                if 'student_data' in st.session_state:
+                    del st.session_state.student_data
+                st.rerun()
 
     st.write("")
 
-    c1, c2 = st.columns(2)
+    c1, c2 = st.columns([3, 1], vertical_alignment='center')
     with c1:
-        st.header('Your Enrolled Subjects')
+        st.markdown(textwrap.dedent("""\
+<div>
+<h2 style="font-size: 1.4rem; font-weight: 700; color: #0F172A; margin: 0 0 4px 0;">Enrolled Courses</h2>
+<p style="color: #64748B; font-size: 0.9rem; margin: 0;">View your registered classes and attendance standing.</p>
+</div>\
+"""), unsafe_allow_html=True)
     with c2:
-        if st.button('➕ Enroll in Subject', type='primary', use_container_width=True):
+        if st.button('Enroll in Course', type='primary', use_container_width=True):
             enroll_dialog()
 
     st.divider()
 
-    with st.spinner('Loading your enrolled subjects...'):
+    with st.spinner('Loading enrolled courses...'):
         subjects = get_student_subjects(student_id) or []
         logs = get_student_attendance(student_id) or []
 
@@ -64,9 +78,9 @@ def student_dashboard():
             stats = stats_map.get(sid, {"total": 0, "attended": 0})
             
             def unenroll_button():
-                if st.button("🗑️ Unenroll from this course", type='tertiary', use_container_width=True, key=f"unenroll_{sid}"):
+                if st.button("Drop Course", type='tertiary', use_container_width=True, key=f"unenroll_{sid}"):
                     unenroll_student_to_subject(student_id, sid)
-                    st.toast(f'Unenrolled from {sub["name"]} successfully!')
+                    st.toast(f'Unenrolled from {sub["name"]}')
                     st.rerun()
 
             with cols[i % 2]:
@@ -75,13 +89,13 @@ def student_dashboard():
                     code=sub['subject_code'],
                     section=sub['section'],
                     stats=[
-                        ('📅', 'Total', stats['total']),
+                        ('📋', 'Total Sessions', stats['total']),
                         ('✅', 'Attended', stats['attended']),
                     ],
                     footer_callback=unenroll_button
                 )
     else:
-        st.info("You are not enrolled in any subjects yet. Click 'Enroll in Subject' above!")
+        st.info("You are not enrolled in any courses yet. Click 'Enroll in Course' above to join your class.")
 
     footer_dashboard()
 
@@ -94,118 +108,129 @@ def student_screen():
         student_dashboard()
         return
 
-    c1, c2 = st.columns(2, vertical_alignment='center', gap='large')
+    c1, c2 = st.columns([1.5, 1], vertical_alignment='center')
     with c1:
         header_dashboard()
     with c2:
-        if st.button("⬅️ Go back to Home", type='secondary', key='loginbackbtn'):
+        if st.button("← Back to Home", type='secondary', key='loginbackbtn', use_container_width=True):
             st.session_state['login_type'] = None
             st.rerun()
 
-    st.header('Student Portal & Login')
-    st.markdown("<p style='color: #475569; font-size: 1rem;'>Log in using FaceID, upload your face photo, or select your registered profile.</p>", unsafe_allow_html=True)
     st.write("")
 
-    if "student_login_mode" not in st.session_state:
-        st.session_state.student_login_mode = 'face_id'
+    with st.container(border=True):
+        st.markdown(textwrap.dedent("""\
+<div style="margin-bottom: 14px;">
+<h2 style="font-size: 1.35rem; font-weight: 700; color: #0F172A; margin: 0 0 4px 0;">Student Sign In</h2>
+<p style="color: #64748B; font-size: 0.88rem; margin: 0;">Authenticate using your face scan, photo, or select your existing profile.</p>
+</div>\
+"""), unsafe_allow_html=True)
 
-    m1, m2, m3 = st.columns(3)
-    with m1:
-        t1_type = "primary" if st.session_state.student_login_mode == 'face_id' else "tertiary"
-        if st.button('📷 Camera FaceID', type=t1_type, use_container_width=True):
+        if "student_login_mode" not in st.session_state:
             st.session_state.student_login_mode = 'face_id'
-            st.rerun()
-    with m2:
-        t2_type = "primary" if st.session_state.student_login_mode == 'upload_photo' else "tertiary"
-        if st.button('📁 Upload Photo', type=t2_type, use_container_width=True):
-            st.session_state.student_login_mode = 'upload_photo'
-            st.rerun()
-    with m3:
-        t3_type = "primary" if st.session_state.student_login_mode == 'select_profile' else "tertiary"
-        if st.button('👤 Select Profile', type=t3_type, use_container_width=True):
-            st.session_state.student_login_mode = 'select_profile'
-            st.rerun()
 
-    st.write("")
-    show_registration = False
-    captured_img_np = None
-
-    # MODE 1: CAMERA SCAN
-    if st.session_state.student_login_mode == 'face_id':
-        photo_source = st.camera_input("Position your face in the center")
-        if photo_source:
-            captured_img_np = np.array(Image.open(photo_source))
-
-    # MODE 2: UPLOAD PHOTO FILE
-    elif st.session_state.student_login_mode == 'upload_photo':
-        uploaded_file = st.file_uploader("Choose your profile photo image file", type=['jpg', 'jpeg', 'png'], key="std_upload_login")
-        if uploaded_file:
-            captured_img_np = np.array(Image.open(uploaded_file))
-
-    # MODE 3: SELECT REGISTERED PROFILE
-    elif st.session_state.student_login_mode == 'select_profile':
-        all_students = get_all_students() or []
-        if all_students:
-            std_options = {s['name']: s for s in all_students}
-            selected_name = st.selectbox("Select your registered name", options=list(std_options.keys()))
-            if st.button("🔑 Log In as Selected Student", type="primary", use_container_width=True):
-                selected_std = std_options[selected_name]
-                st.session_state.is_logged_in = True
-                st.session_state.user_role = 'student'
-                st.session_state.student_data = selected_std
-                st.toast(f"Welcome Back {selected_std['name']}! 👋")
-                time.sleep(0.5)
+        m1, m2, m3 = st.columns(3)
+        with m1:
+            t1_type = "primary" if st.session_state.student_login_mode == 'face_id' else "tertiary"
+            if st.button('Camera FaceID', type=t1_type, use_container_width=True):
+                st.session_state.student_login_mode = 'face_id'
                 st.rerun()
-        else:
-            st.info("No registered students found. Register your profile below!")
-            show_registration = True
+        with m2:
+            t2_type = "primary" if st.session_state.student_login_mode == 'upload_photo' else "tertiary"
+            if st.button('Upload Photo', type=t2_type, use_container_width=True):
+                st.session_state.student_login_mode = 'upload_photo'
+                st.rerun()
+        with m3:
+            t3_type = "primary" if st.session_state.student_login_mode == 'select_profile' else "tertiary"
+            if st.button('Select Profile', type=t3_type, use_container_width=True):
+                st.session_state.student_login_mode = 'select_profile'
+                st.rerun()
 
-    # Process photo login if camera or photo uploaded
-    if captured_img_np is not None:
-        with st.spinner('AI scanning face...'):
-            detected, all_ids, num_faces = predict_attendance(captured_img_np)
+        st.write("")
+        show_registration = False
+        captured_img_np = None
 
-            if num_faces == 0:
-                st.warning('No face detected in the image! Please provide a clear face photo.')
+        # MODE 1: CAMERA SCAN
+        if st.session_state.student_login_mode == 'face_id':
+            photo_source = st.camera_input("Align your face within the camera frame")
+            if photo_source:
+                captured_img_np = np.array(Image.open(photo_source))
+
+        # MODE 2: UPLOAD PHOTO FILE
+        elif st.session_state.student_login_mode == 'upload_photo':
+            uploaded_file = st.file_uploader("Upload your face photo", type=['jpg', 'jpeg', 'png'], key="std_upload_login")
+            if uploaded_file:
+                captured_img_np = np.array(Image.open(uploaded_file))
+
+        # MODE 3: SELECT REGISTERED PROFILE
+        elif st.session_state.student_login_mode == 'select_profile':
+            all_students = get_all_students() or []
+            if all_students:
+                std_options = {s['name']: s for s in all_students}
+                selected_name = st.selectbox("Choose your registered profile", options=list(std_options.keys()))
+                st.write("")
+                if st.button("Sign In as Selected Student", type="primary", use_container_width=True):
+                    selected_std = std_options[selected_name]
+                    st.session_state.is_logged_in = True
+                    st.session_state.user_role = 'student'
+                    st.session_state.student_data = selected_std
+                    st.toast(f"Welcome back, {selected_std['name']}!")
+                    time.sleep(0.5)
+                    st.rerun()
             else:
-                if detected:
-                    student_id = list(detected.keys())[0]
-                    all_students = get_all_students() or []
-                    student = next((s for s in all_students if s['student_id'] == student_id), None)
+                st.info("No registered students found. Register your profile below.")
+                show_registration = True
 
-                    if student:
-                        st.session_state.is_logged_in = True
-                        st.session_state.user_role = 'student'
-                        st.session_state.student_data = student
-                        st.toast(f"Welcome Back {student['name']}! 🎉")
-                        time.sleep(0.8)
-                        st.rerun()
+        # Process photo login if camera or photo uploaded
+        if captured_img_np is not None:
+            with st.spinner('Verifying facial profile...'):
+                detected, all_ids, num_faces = predict_attendance(captured_img_np)
+
+                if num_faces == 0:
+                    st.warning('No face was detected. Please ensure good lighting and face the camera.')
                 else:
-                    st.info('Face not recognized in our database! Register a new profile below or select your registered profile.')
-                    show_registration = True
+                    if detected:
+                        student_id = list(detected.keys())[0]
+                        all_students = get_all_students() or []
+                        student = next((s for s in all_students if s['student_id'] == student_id), None)
 
-    st.divider()
+                        if student:
+                            st.session_state.is_logged_in = True
+                            st.session_state.user_role = 'student'
+                            st.session_state.student_data = student
+                            st.toast(f"Welcome back, {student['name']}!")
+                            time.sleep(0.5)
+                            st.rerun()
+                    else:
+                        st.info('Face not recognized in the system. Register your profile below or sign in via profile select.')
+                        show_registration = True
 
-    # REGISTRATION EXPANDER / CONTAINER
-    if show_registration or st.checkbox("🆕 Register as a New Student Profile", value=show_registration):
-        with st.container(border=True):
-            st.header('Register New Profile')
-            st.markdown("<p style='color: #475569;'>Your profile and face photo will be saved permanently so you can log in anytime!</p>", unsafe_allow_html=True)
+        st.divider()
+
+        # REGISTRATION EXPANDER / CONTAINER
+        if show_registration or st.checkbox("Register New Student Profile", value=show_registration):
+            st.markdown(textwrap.dedent("""\
+<div style="margin-top: 8px; margin-bottom: 12px;">
+<h3 style="font-size: 1.15rem; font-weight: 700; color: #0F172A; margin: 0 0 4px 0;">New Profile Registration</h3>
+<p style="color: #64748B; font-size: 0.88rem; margin: 0;">Save your biometric face and voice profile for instant class check-ins.</p>
+</div>\
+"""), unsafe_allow_html=True)
             
-            new_name = st.text_input("Enter your full name", placeholder='E.g. Hamza Rizvi')
+            new_name = st.text_input("Full Name", placeholder='e.g. Hamza Rizvi')
 
-            reg_photo = st.file_uploader("Upload Profile Photo for Registration", type=['jpg', 'jpeg', 'png'], key="reg_photo_uploader")
+            reg_photo = st.file_uploader("Profile Face Photo", type=['jpg', 'jpeg', 'png'], key="reg_photo_uploader")
             if reg_photo is None and captured_img_np is not None:
-                st.info("Using captured photo for registration.")
+                st.info("Using captured photo from camera for registration.")
 
-            st.subheader('Optional: Voice Profile Enrollment')
+            st.markdown("<p style='font-size: 0.9rem; font-weight: 600; color: #334155; margin-top: 10px; margin-bottom: 4px;'>Optional: Voice Enrollment</p>", unsafe_allow_html=True)
             audio_data = None
             try:
-                audio_data = st.audio_input('Record a short phrase like: "I am present, My name is Hamza"')
+                audio_data = st.audio_input('Record a short phrase (e.g. "I am present")')
             except Exception:
                 pass
 
-            if st.button('✨ Create Account & Save Profile', type='primary', use_container_width=True):
+            st.write("")
+            if st.button('Save Student Profile', type='primary', use_container_width=True):
                 if new_name:
                     target_img_np = None
                     if reg_photo is not None:
@@ -214,7 +239,7 @@ def student_screen():
                         target_img_np = captured_img_np
 
                     if target_img_np is not None:
-                        with st.spinner('Saving face profile permanently...'):
+                        with st.spinner('Registering profile features...'):
                             encodings = get_face_embeddings(target_img_np)
                             if encodings:
                                 face_emb = encodings[0].tolist()
@@ -229,16 +254,16 @@ def student_screen():
                                         st.session_state.is_logged_in = True
                                         st.session_state.user_role = 'student'
                                         st.session_state.student_data = response_data[0]
-                                        st.toast(f'Profile Created Permanently! Hi {new_name}! 🎉')
-                                        time.sleep(1)
+                                        st.toast(f'Profile registered successfully! Welcome {new_name}.')
+                                        time.sleep(0.5)
                                         st.rerun()
                                 except Exception as e:
-                                    st.error(f"❌ **Database Connection Failed:** {e}\n\nPlease check that your Supabase project is active and that your `SUPABASE_URL` in `.streamlit/secrets.toml` is correct.")
+                                    st.error(f"Database connection error: {e}")
                             else:
-                                st.error("Couldn't detect facial features in the photo. Please use a clearer face picture.")
+                                st.error("No distinct face detected in the photo. Please use a clearer picture.")
                     else:
-                        st.warning("Please take a camera snapshot or upload a face photo file for registration.")
+                        st.warning("Please capture or upload a face photo for registration.")
                 else:
-                    st.warning('Please enter your full name!')
+                    st.warning('Please enter your full name.')
 
     footer_dashboard()

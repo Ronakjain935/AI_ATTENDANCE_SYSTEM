@@ -5,18 +5,18 @@ import pandas as pd
 from src.components.dialog_attendance_results import show_attendance_result
 from datetime import datetime
 
-@st.dialog('Voice Attendance')
+@st.dialog('Voice Attendance Verification')
 def voice_attendance_dialog(selected_subject_id):
-    st.markdown("<p style='color: #475569 !important; font-size: 0.95rem; margin-bottom: 1rem;'>Record classroom audio of students speaking (e.g. \"I am present\"). AI will recognize voices and record attendance.</p>", unsafe_allow_html=True)
+    st.markdown("<p style='color: #475569; font-size: 0.9rem; margin-bottom: 1rem;'>Record classroom roll-call audio. The AI speaker engine will identify enrolled students by voice.</p>", unsafe_allow_html=True)
 
     audio_data = st.audio_input("Record classroom audio")
 
-    if st.button('Analyze Audio', use_container_width=True, type='primary'):
+    if st.button('Analyze Voice Audio', use_container_width=True, type='primary'):
         if not audio_data:
             st.warning("Please record audio before analyzing.")
             return
 
-        with st.spinner('Processing Audio data...'):
+        with st.spinner('Analyzing speaker voice profiles...'):
             enrolled_res = supabase.table('subject_students').select("*, students(*)").eq('subject_id', selected_subject_id).execute()
             enrolled_students = enrolled_res.data
 
@@ -29,11 +29,10 @@ def voice_attendance_dialog(selected_subject_id):
             }
 
             if not candidates_dict:
-                st.error('No enrolled students have voice profiles registered.')
+                st.error('No enrolled students have registered voice profiles.')
                 return
             
             audio_bytes = audio_data.read()
-
             detected_scores = process_bulk_audio(audio_bytes, candidates_dict)
 
             results, attendance_to_log = [], []
@@ -48,7 +47,7 @@ def voice_attendance_dialog(selected_subject_id):
                     "Name": student['name'],
                     "ID": student['student_id'],
                     "Confidence": f"{score:.2f}" if is_present else "-",
-                    "Status": "✅ Present" if is_present else "❌ Absent"
+                    "Status": "Present" if is_present else "Absent"
                 })
 
                 attendance_to_log.append({

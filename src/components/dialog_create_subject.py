@@ -3,16 +3,16 @@ import time
 from src.database.db import create_subject
 from src.database.config import supabase
 
-@st.dialog("Create New Subject")
+@st.dialog("Create New Course")
 def create_subject_dialog(teacher_id):
-    st.markdown("<p style='color: #475569 !important; font-size: 0.95rem; margin-bottom: 1rem;'>Enter the details of the subject below:</p>", unsafe_allow_html=True)
+    st.markdown("<p style='color: #475569; font-size: 0.9rem; margin-bottom: 1rem;'>Enter course details to set up your class roster.</p>", unsafe_allow_html=True)
     
-    sub_id = st.text_input("Subject Code", placeholder="e.g. CS101")
-    sub_name = st.text_input("Subject Name", placeholder="e.g. Introduction to Computer Science")
-    sub_section = st.text_input("Section", placeholder="e.g. Section A")
+    sub_id = st.text_input("Course Code", placeholder="e.g. CS101")
+    sub_name = st.text_input("Course Title", placeholder="e.g. Introduction to Computer Science")
+    sub_section = st.text_input("Section / Group", placeholder="e.g. Section A")
 
-    st.markdown("<div style='margin-top: 1.2rem;'></div>", unsafe_allow_html=True)
-    if st.button("Save & Add Subject", type='primary', use_container_width=True):
+    st.write("")
+    if st.button("Create Course", type='primary', use_container_width=True):
         if sub_id and sub_name and sub_section:
             code = sub_id.strip()
             name = sub_name.strip()
@@ -26,39 +26,37 @@ def create_subject_dialog(teacher_id):
                 pass
 
             if existing and existing.data:
-                # Subject already exists in database: auto-link and update it to current teacher!
                 try:
                     supabase.table('subjects').update({
                         'name': name,
                         'section': section,
                         'teacher_id': teacher_id
                     }).eq('subject_code', code).execute()
-                    st.success(f"Existing subject '{code}' has been updated and linked to your account! 🎉")
+                    st.success(f"Existing course '{code}' updated and linked to your account.")
                     time.sleep(1)
                     st.rerun()
                 except Exception as e:
-                    st.error(f"Error linking subject: {str(e)}")
+                    st.error(f"Error linking course: {str(e)}")
             else:
                 try:
                     create_subject(code, name, section, teacher_id)
-                    st.toast("Subject Created Successfully! 🎉")
+                    st.toast("Course created successfully!", icon="✅")
                     time.sleep(1)
                     st.rerun()
                 except Exception as e:
                     err_str = str(e)
                     if "23505" in err_str or "unique constraint" in err_str:
-                        # Fallback recovery: update and link
                         try:
                             supabase.table('subjects').update({
                                 'name': name,
                                 'section': section,
                                 'teacher_id': teacher_id
                             }).eq('subject_code', code).execute()
-                            st.success(f"Subject '{code}' has been linked to your account! 🎉")
+                            st.success(f"Course '{code}' linked to your account.")
                             time.sleep(1)
                             st.rerun()
                         except Exception:
-                            st.error(f"Subject code '{code}' already exists in database.")
+                            st.error(f"Course code '{code}' already exists.")
                     else:
                         st.error(f"Error: {err_str}")
         else:
