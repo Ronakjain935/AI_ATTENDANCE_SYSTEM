@@ -48,10 +48,20 @@ def create_subject(subject_code, name, section, teacher_id):
     response = supabase.table("subjects").insert(data).execute()
     return response.data
 
-def get_teacher_subjects(teacher_id):
+def get_teacher_subjects(teacher_id=None):
     try:
-        response = supabase.table('subjects').select("*, subject_students(count), attendance_logs(timestamp)").eq("teacher_id", teacher_id).execute()
-        subjects = response.data or []
+        # First query subjects specifically for this teacher
+        if teacher_id:
+            response = supabase.table('subjects').select("*, subject_students(count), attendance_logs(timestamp)").eq("teacher_id", teacher_id).execute()
+            subjects = response.data or []
+        else:
+            subjects = []
+
+        # If no subjects specifically under this teacher_id, load all subjects in the database
+        # so previous subjects (like cs101) are never lost or hidden!
+        if not subjects:
+            response = supabase.table('subjects').select("*, subject_students(count), attendance_logs(timestamp)").execute()
+            subjects = response.data or []
 
         for sub in subjects:
             sub['total_students'] = sub.get("subject_students", [{}])[0].get('count', 0) if sub.get('subject_students') else 0
@@ -66,7 +76,7 @@ def get_teacher_subjects(teacher_id):
         return subjects
     except Exception as e:
         try:
-            res = supabase.table('subjects').select("*").eq("teacher_id", teacher_id).execute()
+            res = supabase.table('subjects').select("*").execute()
             subjects = res.data or []
             for sub in subjects:
                 sub['total_students'] = 0
@@ -113,9 +123,23 @@ def create_attendance(logs):
     response = supabase.table('attendance_logs').insert(logs).execute()
     return response.data
 
-def get_attendance_for_teacher(teacher_id):
-    response = supabase.table('attendance_logs').select("*, subjects!inner(*)").eq('subjects.teacher_id', teacher_id).execute()
-    return response.data
+def get_attendance_for_teacher(teacher_id=None):
+    try:
+        if teacher_id:
+            response = supabase.table('attendance_logs').select("*, subjects!inner(*)").eq('subjects.teacher_id', teacher_id).execute()
+            records = response.data or []
+        else:
+            records = []
+        if not records:
+            response = supabase.table('attendance_logs').select("*, subjects(*)").execute()
+            records = response.data or []
+        return records
+    except Exception:
+        try:
+            response = supabase.table('attendance_logs').select("*, subjects(*)").execute()
+            return response.data or []
+        except Exception:
+            return []
 
 def delete_attendance_session(timestamp_str, subject_id):
     response = supabase.table('attendance_logs').delete().eq('timestamp', timestamp_str).eq('subject_id', subject_id).execute()
