@@ -39,7 +39,7 @@ def style_base_layout():
                 font-family: 'Outfit', 'Plus Jakarta Sans', sans-serif !important;
                 font-weight: 800 !important;
                 letter-spacing: -0.02em !important;
-                color: #0F172A !important;
+                color: #0F172A;
             }
 
             /* Custom Webkit Scrollbar */

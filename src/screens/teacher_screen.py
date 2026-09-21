@@ -35,12 +35,12 @@ def teacher_screen():
 
 def teacher_dashboard():
     teacher_data = st.session_state.teacher_data
-    c1, c2 = st.columns(2, vertical_alignment='center', gap='xxlarge')
+    c1, c2 = st.columns(2, vertical_alignment='center', gap='large')
     with c1:
         header_dashboard()
     with c2:
         st.subheader(f"Welcome, {teacher_data['name']}")
-        if st.button("Logout 🚪", type='secondary', key='loginbackbtn', shortcut="control+backspace"):
+        if st.button("Logout 🚪", type='secondary', key='loginbackbtn'):
             st.session_state['is_logged_in'] = False
             if 'teacher_data' in st.session_state:
                 del st.session_state.teacher_data
@@ -315,11 +315,11 @@ def login_teacher(username, password):
 
 
 def teacher_screen_login():
-    c1, c2 = st.columns(2, vertical_alignment='center', gap='xxlarge')
+    c1, c2 = st.columns(2, vertical_alignment='center', gap='large')
     with c1:
         header_dashboard()
     with c2:
-        if st.button("⬅️ Go back to Home", type='secondary', key='loginbackbtn', shortcut="control+backspace"):
+        if st.button("⬅️ Go back to Home", type='secondary', key='loginbackbtn'):
             st.session_state['login_type'] = None
             st.rerun()
 
@@ -334,7 +334,7 @@ def teacher_screen_login():
     btnc1, btnc2 = st.columns(2)
 
     with btnc1:
-        if st.button('🔑 Login', shortcut='control+enter', use_container_width=True, type='primary'):
+        if st.button('🔑 Login', use_container_width=True, type='primary'):
             if login_teacher(teacher_username, teacher_pass):
                 st.toast("Welcome back!", icon="👋")
                 time.sleep(1)
@@ -366,11 +366,11 @@ def register_teacher(teacher_username, teacher_name, teacher_pass, teacher_pass_
 
 
 def teacher_screen_register():
-    c1, c2 = st.columns(2, vertical_alignment='center', gap='xxlarge')
+    c1, c2 = st.columns(2, vertical_alignment='center', gap='large')
     with c1:
         header_dashboard()
     with c2:
-        if st.button("⬅️ Go back to Home", type='secondary', key='loginbackbtn', shortcut="control+backspace"):
+        if st.button("⬅️ Go back to Home", type='secondary', key='loginbackbtn'):
             st.session_state['login_type'] = None
             st.rerun()
 
@@ -387,7 +387,7 @@ def teacher_screen_register():
     btnc1, btnc2 = st.columns(2)
 
     with btnc1:
-        if st.button('📝 Register now', shortcut='control+enter', use_container_width=True, type='primary'):
+        if st.button('📝 Register now', use_container_width=True, type='primary'):
             success, message = register_teacher(teacher_username, teacher_name, teacher_pass, teacher_pass_confirm)
             if success:
                 st.success(message)

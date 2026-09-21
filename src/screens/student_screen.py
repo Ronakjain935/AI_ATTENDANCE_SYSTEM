@@ -19,12 +19,12 @@ def student_dashboard():
     student_data = st.session_state.student_data
     student_id = student_data['student_id']
 
-    c1, c2 = st.columns(2, vertical_alignment='center', gap='xxlarge')
+    c1, c2 = st.columns(2, vertical_alignment='center', gap='large')
     with c1:
         header_dashboard()
     with c2:
         st.subheader(f"Welcome, {student_data['name']}")
-        if st.button("Logout 🚪", type='secondary', key='loginbackbtn', shortcut="control+backspace"):
+        if st.button("Logout 🚪", type='secondary', key='loginbackbtn'):
             st.session_state['is_logged_in'] = False
             if 'student_data' in st.session_state:
                 del st.session_state.student_data
@@ -92,11 +92,11 @@ def student_screen():
         student_dashboard()
         return
 
-    c1, c2 = st.columns(2, vertical_alignment='center', gap='xxlarge')
+    c1, c2 = st.columns(2, vertical_alignment='center', gap='large')
     with c1:
         header_dashboard()
     with c2:
-        if st.button("⬅️ Go back to Home", type='secondary', key='loginbackbtn', shortcut="control+backspace"):
+        if st.button("⬅️ Go back to Home", type='secondary', key='loginbackbtn'):
             st.session_state['login_type'] = None
             st.rerun()
 
@@ -220,15 +220,18 @@ def student_screen():
                                 if audio_data:
                                     voice_emb = get_voice_embedding(audio_data.read())
 
-                                response_data = create_student(new_name, face_embedding=face_emb, voice_embedding=voice_emb)
-                                if response_data:
-                                    train_classifier()
-                                    st.session_state.is_logged_in = True
-                                    st.session_state.user_role = 'student'
-                                    st.session_state.student_data = response_data[0]
-                                    st.toast(f'Profile Created Permanently! Hi {new_name}! 🎉')
-                                    time.sleep(1)
-                                    st.rerun()
+                                try:
+                                    response_data = create_student(new_name, face_embedding=face_emb, voice_embedding=voice_emb)
+                                    if response_data:
+                                        train_classifier()
+                                        st.session_state.is_logged_in = True
+                                        st.session_state.user_role = 'student'
+                                        st.session_state.student_data = response_data[0]
+                                        st.toast(f'Profile Created Permanently! Hi {new_name}! 🎉')
+                                        time.sleep(1)
+                                        st.rerun()
+                                except Exception as e:
+                                    st.error(f"❌ **Database Connection Failed:** {e}\n\nPlease check that your Supabase project is active and that your `SUPABASE_URL` in `.streamlit/secrets.toml` is correct.")
                             else:
                                 st.error("Couldn't detect facial features in the photo. Please use a clearer face picture.")
                     else:
