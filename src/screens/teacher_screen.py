@@ -5,7 +5,7 @@ from datetime import datetime
 import time
 import textwrap
 
-from src.ui.base_layout import style_background_dashboard, style_base_layout
+from src.ui.base_layout import style_background_dashboard, style_base_layout, render_theme_toggle, get_current_theme
 from src.components.header import header_dashboard
 from src.components.footer import footer_dashboard
 from src.components.subject_card import subject_card
@@ -37,25 +37,35 @@ def teacher_screen():
 
 
 def teacher_dashboard():
+    theme = get_current_theme()
+    is_dark = (theme == "dark")
+
+    card_bg = "#1E293B" if is_dark else "#FFFFFF"
+    card_border = "#334155" if is_dark else "#CBD5E1"
+    text_color = "#FFFFFF" if is_dark else "#0F172A"
+    sub_color = "#94A3B8" if is_dark else "#475569"
+
     teacher_data = st.session_state.teacher_data
     teacher_id = teacher_data['teacher_id']
     teacher_name = teacher_data.get('name', 'Instructor')
     initials = "".join([part[0] for part in teacher_name.split()][:2]).upper() if teacher_name else "IN"
 
-    # Top App Shell Header
-    top_col1, top_col2 = st.columns([1.5, 1], vertical_alignment='center')
+    # Top App Shell Header with Theme Toggle
+    top_col1, top_col2 = st.columns([1.1, 1.2], vertical_alignment='center')
     with top_col1:
         header_dashboard()
     with top_col2:
-        u_col1, u_col2 = st.columns([2.2, 1], vertical_alignment='center')
+        u_col0, u_col1, u_col2 = st.columns([1.1, 1.7, 0.9], vertical_alignment='center')
+        with u_col0:
+            render_theme_toggle("teacher_top_theme_toggle")
         with u_col1:
             st.markdown(textwrap.dedent(f"""\
-<div style="display: flex; align-items: center; justify-content: flex-end; gap: 10px;">
+<div style="display: flex; align-items: center; justify-content: flex-end; gap: 8px;">
 <div style="text-align: right;">
-<div style="font-size: 0.92rem; font-weight: 700; color: #0F172A; white-space: nowrap;">{teacher_name}</div>
-<span style="font-size: 0.72rem; background: #0F172A; color: #F8FAFC; border: 1px solid #1E293B; padding: 2px 7px; border-radius: 4px; font-weight: 700; letter-spacing: 0.04em;">FACULTY</span>
+<div style="font-size: 0.92rem; font-weight: 800; color: {text_color}; white-space: nowrap;">{teacher_name}</div>
+<span style="font-size: 0.70rem; background: {'#2563EB' if is_dark else '#0F172A'}; color: #FFFFFF; padding: 2px 6px; border-radius: 4px; font-weight: 800; letter-spacing: 0.04em;">FACULTY</span>
 </div>
-<div style="width: 38px; height: 38px; border-radius: 6px; background: linear-gradient(135deg, #0F172A 0%, #1E3A8A 100%); color: #FFFFFF; font-weight: 700; font-size: 0.88rem; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(15, 23, 42, 0.2);">
+<div style="width: 38px; height: 38px; border-radius: 6px; background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%); color: #FFFFFF; font-weight: 800; font-size: 0.88rem; display: flex; align-items: center; justify-content: center;">
 {initials}
 </div>
 </div>\
@@ -75,38 +85,38 @@ def teacher_dashboard():
     sessions_keys = set((r.get('timestamp'), r.get('subject_id')) for r in records if r.get('timestamp'))
     total_sessions_count = len(sessions_keys)
 
-    # Classic Executive KPI Metric Bar
+    # High-Contrast KPI Metric Bar
     kpi1, kpi2, kpi3 = st.columns(3)
     with kpi1:
         st.markdown(textwrap.dedent(f"""\
-<div style="background: #FFFFFF; border: 1px solid #CBD5E1; border-top: 3px solid #1E3A8A; border-radius: 8px; padding: 14px 18px; box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);">
+<div style="background: {card_bg}; border: 1.5px solid {card_border}; border-top: 4px solid #2563EB; border-radius: 8px; padding: 14px 18px; box-shadow: 0 1px 3px rgba(0,0,0,0.06);">
 <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
-<span style="color: #475569; font-size: 0.74rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;">Active Courses</span>
-<span style="font-size: 1.1rem;">📚</span>
+<span style="color: {sub_color}; font-size: 0.78rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">Active Courses</span>
+<span style="font-size: 1.2rem;">📚</span>
 </div>
-<div style="font-size: 1.75rem; font-weight: 700; color: #0F172A; font-family: 'Lora', Georgia, serif;">{len(subjects)}</div>
+<div style="font-size: 1.85rem; font-weight: 800; color: {text_color};">{len(subjects)}</div>
 </div>\
 """), unsafe_allow_html=True)
 
     with kpi2:
         st.markdown(textwrap.dedent(f"""\
-<div style="background: #FFFFFF; border: 1px solid #CBD5E1; border-top: 3px solid #047857; border-radius: 8px; padding: 14px 18px; box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);">
+<div style="background: {card_bg}; border: 1.5px solid {card_border}; border-top: 4px solid #16A34A; border-radius: 8px; padding: 14px 18px; box-shadow: 0 1px 3px rgba(0,0,0,0.06);">
 <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
-<span style="color: #475569; font-size: 0.74rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;">Total Enrolled</span>
-<span style="font-size: 1.1rem;">👥</span>
+<span style="color: {sub_color}; font-size: 0.78rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">Total Enrolled</span>
+<span style="font-size: 1.2rem;">👥</span>
 </div>
-<div style="font-size: 1.75rem; font-weight: 700; color: #0F172A; font-family: 'Lora', Georgia, serif;">{total_students_enrolled}</div>
+<div style="font-size: 1.85rem; font-weight: 800; color: {text_color};">{total_students_enrolled}</div>
 </div>\
 """), unsafe_allow_html=True)
 
     with kpi3:
         st.markdown(textwrap.dedent(f"""\
-<div style="background: #FFFFFF; border: 1px solid #CBD5E1; border-top: 3px solid #B45309; border-radius: 8px; padding: 14px 18px; box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);">
+<div style="background: {card_bg}; border: 1.5px solid {card_border}; border-top: 4px solid #D97706; border-radius: 8px; padding: 14px 18px; box-shadow: 0 1px 3px rgba(0,0,0,0.06);">
 <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
-<span style="color: #475569; font-size: 0.74rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;">Sessions Logged</span>
-<span style="font-size: 1.1rem;">📋</span>
+<span style="color: {sub_color}; font-size: 0.78rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">Sessions Logged</span>
+<span style="font-size: 1.2rem;">📋</span>
 </div>
-<div style="font-size: 1.75rem; font-weight: 700; color: #0F172A; font-family: 'Lora', Georgia, serif;">{total_sessions_count}</div>
+<div style="font-size: 1.85rem; font-weight: 800; color: {text_color};">{total_sessions_count}</div>
 </div>\
 """), unsafe_allow_html=True)
 
@@ -194,7 +204,7 @@ def teacher_tab_take_attendance(subjects):
     c1, c2, c3 = st.columns(3)
 
     with c1:
-        if st.button('Clear Photos', use_container_width=True, type='tertiary', disabled=not has_photos):
+        if st.button('Clear Photos', use_container_width=True, type='secondary', disabled=not has_photos):
             st.session_state.attendance_images = []
             st.rerun()
 
@@ -444,23 +454,30 @@ def login_teacher(username, password):
 
 
 def teacher_screen_login():
-    c1, c2 = st.columns([1.5, 1], vertical_alignment='center')
+    theme = get_current_theme()
+    is_dark = (theme == "dark")
+    title_color = "#FFFFFF" if is_dark else "#0F172A"
+    sub_color = "#94A3B8" if is_dark else "#475569"
+
+    c1, c2, c3 = st.columns([1.5, 0.7, 0.8], vertical_alignment='center')
     with c1:
         header_dashboard()
     with c2:
-        if st.button("← Back to Home", type='secondary', key='loginbackbtn', use_container_width=True):
+        render_theme_toggle('tlogin_theme_toggle')
+    with c3:
+        if st.button("← Home", type='secondary', key='loginbackbtn', use_container_width=True):
             st.session_state['login_type'] = None
             st.rerun()
 
     st.write("")
     with st.container(border=True):
-        st.markdown(textwrap.dedent("""\
+        st.markdown(textwrap.dedent(f"""\
 <div style="margin-bottom: 14px;">
-<div style="display: inline-block; background: #EEF2FF; color: #4338CA; border: 1px solid #E0E7FF; padding: 2px 8px; border-radius: 6px; font-size: 0.74rem; font-weight: 700; text-transform: uppercase; margin-bottom: 8px;">
+<div style="display: inline-block; background: {'#1E293B' if is_dark else '#EEF2FF'}; color: {'#38BDF8' if is_dark else '#4338CA'}; border: 1px solid {'#334155' if is_dark else '#E0E7FF'}; padding: 2px 8px; border-radius: 6px; font-size: 0.74rem; font-weight: 700; text-transform: uppercase; margin-bottom: 8px;">
 Instructor Authentication
 </div>
-<h2 style="font-size: 1.45rem; font-weight: 800; color: #0F172A; margin: 0 0 4px 0;">Teacher Sign In</h2>
-<p style="color: #64748B; font-size: 0.88rem; margin: 0;">Access your classroom rosters and take attendance.</p>
+<h2 style="font-size: 1.45rem; font-weight: 800; color: {title_color}; margin: 0 0 4px 0;">Teacher Sign In</h2>
+<p style="color: {sub_color}; font-size: 0.88rem; margin: 0;">Access your classroom rosters and take attendance.</p>
 </div>\
 """), unsafe_allow_html=True)
 
@@ -503,23 +520,30 @@ def register_teacher(teacher_username, teacher_name, teacher_pass, teacher_pass_
 
 
 def teacher_screen_register():
-    c1, c2 = st.columns([1.5, 1], vertical_alignment='center')
+    theme = get_current_theme()
+    is_dark = (theme == "dark")
+    title_color = "#FFFFFF" if is_dark else "#0F172A"
+    sub_color = "#94A3B8" if is_dark else "#475569"
+
+    c1, c2, c3 = st.columns([1.5, 0.7, 0.8], vertical_alignment='center')
     with c1:
         header_dashboard()
     with c2:
-        if st.button("← Back to Home", type='secondary', key='loginbackbtn', use_container_width=True):
+        render_theme_toggle('treg_theme_toggle')
+    with c3:
+        if st.button("← Home", type='secondary', key='regbackbtn', use_container_width=True):
             st.session_state['login_type'] = None
             st.rerun()
 
     st.write("")
     with st.container(border=True):
-        st.markdown(textwrap.dedent("""\
+        st.markdown(textwrap.dedent(f"""\
 <div style="margin-bottom: 14px;">
-<div style="display: inline-block; background: #ECFDF5; color: #047857; border: 1px solid #A7F3D0; padding: 2px 8px; border-radius: 6px; font-size: 0.74rem; font-weight: 700; text-transform: uppercase; margin-bottom: 8px;">
+<div style="display: inline-block; background: {'#1E293B' if is_dark else '#ECFDF5'}; color: {'#4ADE80' if is_dark else '#047857'}; border: 1px solid {'#334155' if is_dark else '#A7F3D0'}; padding: 2px 8px; border-radius: 6px; font-size: 0.74rem; font-weight: 700; text-transform: uppercase; margin-bottom: 8px;">
 New Account Setup
 </div>
-<h2 style="font-size: 1.45rem; font-weight: 800; color: #0F172A; margin: 0 0 4px 0;">Instructor Registration</h2>
-<p style="color: #64748B; font-size: 0.88rem; margin: 0;">Set up your educator account to manage classroom attendance.</p>
+<h2 style="font-size: 1.45rem; font-weight: 800; color: {title_color}; margin: 0 0 4px 0;">Instructor Registration</h2>
+<p style="color: {sub_color}; font-size: 0.88rem; margin: 0;">Set up your educator account to manage classroom attendance.</p>
 </div>\
 """), unsafe_allow_html=True)
 
