@@ -5,7 +5,7 @@ import urllib.parse
 
 @st.dialog("Share Class Link")
 def share_subject_dialog(subject_name, subject_code):
-    app_domain = "snapclass-main.streamlit.app"
+    app_domain = "aiattendancesystemgit-h.streamlit.app"
     join_url = f"https://{app_domain}/?join-code={subject_code}"
 
     # Generate high quality QR code PNG

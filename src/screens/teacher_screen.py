@@ -11,7 +11,8 @@ from src.components.subject_card import subject_card
 from src.database.db import (
     check_teacher_exists, create_teacher, teacher_login, 
     get_teacher_subjects, get_attendance_for_teacher,
-    delete_attendance_session, delete_all_attendance_for_teacher
+    delete_attendance_session, delete_all_attendance_for_teacher,
+    get_enrolled_students_for_subject
 )
 from src.components.dialog_create_subject import create_subject_dialog
 from src.components.dialog_share_subject import share_subject_dialog
@@ -208,6 +209,31 @@ def teacher_tab_manage_subjects():
                 stats=stats,
                 footer_callback=share_btn
             )
+
+            with st.expander(f"👥 View Enrolled Students ({sub['total_students']})", expanded=False):
+                enrolled = get_enrolled_students_for_subject(sub['subject_id'])
+                if enrolled:
+                    std_list = []
+                    for idx, e in enumerate(enrolled, 1):
+                        std = e.get('students', {})
+                        std_name = std.get('name', 'Unknown') if std else 'Unknown'
+                        std_id = std.get('student_id', 'N/A') if std else 'N/A'
+                        enrolled_at = e.get('created_at', '')
+                        if enrolled_at:
+                            try:
+                                enrolled_at = datetime.fromisoformat(enrolled_at).strftime("%b %d, %Y")
+                            except Exception:
+                                pass
+                        std_list.append({
+                            "#": idx,
+                            "Student Name": std_name,
+                            "Student ID": std_id,
+                            "Enrolled On": enrolled_at or "N/A"
+                        })
+                    st.dataframe(pd.DataFrame(std_list), use_container_width=True, hide_index=True)
+                else:
+                    st.info(f"No students enrolled in {sub['name']} yet. Click 'Share Code' above to invite students!")
+            st.write("")
     else:
         st.info("NO SUBJECTS FOUND. CREATE ONE ABOVE")
 
