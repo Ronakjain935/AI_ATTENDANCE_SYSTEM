@@ -19,17 +19,24 @@ from src.components.subject_card import subject_card
 def student_dashboard():
     student_data = st.session_state.student_data
     student_id = student_data['student_id']
+    student_name = student_data.get('name', 'Student')
+    initials = "".join([part[0] for part in student_name.split()][:2]).upper() if student_name else "ST"
 
     top_col1, top_col2 = st.columns([1.5, 1], vertical_alignment='center')
     with top_col1:
         header_dashboard()
     with top_col2:
-        u_col1, u_col2 = st.columns([2, 1], vertical_alignment='center')
+        u_col1, u_col2 = st.columns([2.2, 1], vertical_alignment='center')
         with u_col1:
             st.markdown(textwrap.dedent(f"""\
+<div style="display: flex; align-items: center; justify-content: flex-end; gap: 10px;">
 <div style="text-align: right;">
-<span style="font-size: 0.8rem; color: #64748B; font-weight: 500;">Student Account</span>
-<div style="font-size: 0.95rem; font-weight: 700; color: #0F172A; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{student_data['name']}</div>
+<div style="font-size: 0.92rem; font-weight: 700; color: #0F172A; white-space: nowrap;">{student_name}</div>
+<span style="font-size: 0.74rem; background: #EEF2FF; color: #4338CA; border: 1px solid #E0E7FF; padding: 1px 6px; border-radius: 4px; font-weight: 700;">Student</span>
+</div>
+<div style="width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(135deg, #4F46E5 0%, #38BDF8 100%); color: #FFFFFF; font-weight: 700; font-size: 0.88rem; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(79, 70, 229, 0.25);">
+{initials}
+</div>
 </div>\
 """), unsafe_allow_html=True)
         with u_col2:
@@ -39,34 +46,77 @@ def student_dashboard():
                     del st.session_state.student_data
                 st.rerun()
 
+    with st.spinner('Loading enrolled courses...'):
+        subjects = get_student_subjects(student_id) or []
+        logs = get_student_attendance(student_id) or []
+
+    stats_map = {}
+    total_attended_all = 0
+    total_sessions_all = 0
+
+    for log in logs:
+        sid = log['subject_id']
+        if sid not in stats_map:
+            stats_map[sid] = {"total": 0, "attended": 0}
+        stats_map[sid]['total'] += 1
+        total_sessions_all += 1
+        if log.get('is_present'):
+            stats_map[sid]['attended'] += 1
+            total_attended_all += 1
+
+    overall_attendance_pct = int((total_attended_all / total_sessions_all * 100)) if total_sessions_all > 0 else 100
+
+    # Student Executive KPI Row
+    kpi1, kpi2, kpi3 = st.columns(3)
+    with kpi1:
+        st.markdown(textwrap.dedent(f"""\
+<div style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 12px; padding: 14px 18px; box-shadow: 0 1px 2px rgba(0,0,0,0.02);">
+<div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+<span style="color: #64748B; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;">Enrolled Courses</span>
+<span style="font-size: 1.1rem;">📚</span>
+</div>
+<div style="font-size: 1.6rem; font-weight: 800; color: #0F172A; font-family: 'Outfit', sans-serif;">{len(subjects)}</div>
+</div>\
+"""), unsafe_allow_html=True)
+
+    with kpi2:
+        st.markdown(textwrap.dedent(f"""\
+<div style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 12px; padding: 14px 18px; box-shadow: 0 1px 2px rgba(0,0,0,0.02);">
+<div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+<span style="color: #64748B; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;">Classes Attended</span>
+<span style="font-size: 1.1rem;">✅</span>
+</div>
+<div style="font-size: 1.6rem; font-weight: 800; color: #0F172A; font-family: 'Outfit', sans-serif;">{total_attended_all} / {total_sessions_all}</div>
+</div>\
+"""), unsafe_allow_html=True)
+
+    with kpi3:
+        pct_color = "#10B981" if overall_attendance_pct >= 75 else "#F59E0B"
+        st.markdown(textwrap.dedent(f"""\
+<div style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 12px; padding: 14px 18px; box-shadow: 0 1px 2px rgba(0,0,0,0.02);">
+<div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+<span style="color: #64748B; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;">Attendance Rate</span>
+<span style="font-size: 1.1rem;">📊</span>
+</div>
+<div style="font-size: 1.6rem; font-weight: 800; color: {pct_color}; font-family: 'Outfit', sans-serif;">{overall_attendance_pct}%</div>
+</div>\
+"""), unsafe_allow_html=True)
+
     st.write("")
 
     c1, c2 = st.columns([3, 1], vertical_alignment='center')
     with c1:
         st.markdown(textwrap.dedent("""\
 <div>
-<h2 style="font-size: 1.4rem; font-weight: 700; color: #0F172A; margin: 0 0 4px 0;">Enrolled Courses</h2>
-<p style="color: #64748B; font-size: 0.9rem; margin: 0;">View your registered classes and attendance standing.</p>
+<h2 style="font-size: 1.45rem; font-weight: 800; color: #0F172A; margin: 0 0 4px 0;">My Active Courses</h2>
+<p style="color: #64748B; font-size: 0.9rem; margin: 0;">Registered subjects and your attendance standing.</p>
 </div>\
 """), unsafe_allow_html=True)
     with c2:
-        if st.button('Enroll in Course', type='primary', use_container_width=True):
+        if st.button('➕ Enroll in Course', type='primary', use_container_width=True):
             enroll_dialog()
 
     st.divider()
-
-    with st.spinner('Loading enrolled courses...'):
-        subjects = get_student_subjects(student_id) or []
-        logs = get_student_attendance(student_id) or []
-
-    stats_map = {}
-    for log in logs:
-        sid = log['subject_id']
-        if sid not in stats_map:
-            stats_map[sid] = {"total": 0, "attended": 0}
-        stats_map[sid]['total'] += 1
-        if log.get('is_present'):
-            stats_map[sid]['attended'] += 1
 
     if subjects:
         cols = st.columns(2)
@@ -121,8 +171,11 @@ def student_screen():
     with st.container(border=True):
         st.markdown(textwrap.dedent("""\
 <div style="margin-bottom: 14px;">
-<h2 style="font-size: 1.35rem; font-weight: 700; color: #0F172A; margin: 0 0 4px 0;">Student Sign In</h2>
-<p style="color: #64748B; font-size: 0.88rem; margin: 0;">Authenticate using your face scan, photo, or select your existing profile.</p>
+<div style="display: inline-block; background: #EEF2FF; color: #4338CA; border: 1px solid #E0E7FF; padding: 2px 8px; border-radius: 6px; font-size: 0.74rem; font-weight: 700; text-transform: uppercase; margin-bottom: 8px;">
+Biometric Verification
+</div>
+<h2 style="font-size: 1.45rem; font-weight: 800; color: #0F172A; margin: 0 0 4px 0;">Student Check-In</h2>
+<p style="color: #64748B; font-size: 0.88rem; margin: 0;">Sign in using FaceID, photo verification, or choose your profile.</p>
 </div>\
 """), unsafe_allow_html=True)
 
@@ -131,18 +184,18 @@ def student_screen():
 
         m1, m2, m3 = st.columns(3)
         with m1:
-            t1_type = "primary" if st.session_state.student_login_mode == 'face_id' else "tertiary"
-            if st.button('Camera FaceID', type=t1_type, use_container_width=True):
+            t1_type = "primary" if st.session_state.student_login_mode == 'face_id' else "secondary"
+            if st.button('📷 Camera FaceID', type=t1_type, use_container_width=True):
                 st.session_state.student_login_mode = 'face_id'
                 st.rerun()
         with m2:
-            t2_type = "primary" if st.session_state.student_login_mode == 'upload_photo' else "tertiary"
-            if st.button('Upload Photo', type=t2_type, use_container_width=True):
+            t2_type = "primary" if st.session_state.student_login_mode == 'upload_photo' else "secondary"
+            if st.button('📁 Upload Photo', type=t2_type, use_container_width=True):
                 st.session_state.student_login_mode = 'upload_photo'
                 st.rerun()
         with m3:
-            t3_type = "primary" if st.session_state.student_login_mode == 'select_profile' else "tertiary"
-            if st.button('Select Profile', type=t3_type, use_container_width=True):
+            t3_type = "primary" if st.session_state.student_login_mode == 'select_profile' else "secondary"
+            if st.button('👤 Select Profile', type=t3_type, use_container_width=True):
                 st.session_state.student_login_mode = 'select_profile'
                 st.rerun()
 
@@ -152,13 +205,13 @@ def student_screen():
 
         # MODE 1: CAMERA SCAN
         if st.session_state.student_login_mode == 'face_id':
-            photo_source = st.camera_input("Align your face within the camera frame")
+            photo_source = st.camera_input("Align your face within the frame")
             if photo_source:
                 captured_img_np = np.array(Image.open(photo_source))
 
         # MODE 2: UPLOAD PHOTO FILE
         elif st.session_state.student_login_mode == 'upload_photo':
-            uploaded_file = st.file_uploader("Upload your face photo", type=['jpg', 'jpeg', 'png'], key="std_upload_login")
+            uploaded_file = st.file_uploader("Upload profile face photo", type=['jpg', 'jpeg', 'png'], key="std_upload_login")
             if uploaded_file:
                 captured_img_np = np.array(Image.open(uploaded_file))
 
@@ -167,7 +220,7 @@ def student_screen():
             all_students = get_all_students() or []
             if all_students:
                 std_options = {s['name']: s for s in all_students}
-                selected_name = st.selectbox("Choose your registered profile", options=list(std_options.keys()))
+                selected_name = st.selectbox("Choose registered student name", options=list(std_options.keys()))
                 st.write("")
                 if st.button("Sign In as Selected Student", type="primary", use_container_width=True):
                     selected_std = std_options[selected_name]
@@ -183,11 +236,11 @@ def student_screen():
 
         # Process photo login if camera or photo uploaded
         if captured_img_np is not None:
-            with st.spinner('Verifying facial profile...'):
+            with st.spinner('Scanning facial features...'):
                 detected, all_ids, num_faces = predict_attendance(captured_img_np)
 
                 if num_faces == 0:
-                    st.warning('No face was detected. Please ensure good lighting and face the camera.')
+                    st.warning('No face was detected. Please ensure good lighting and face the camera directly.')
                 else:
                     if detected:
                         student_id = list(detected.keys())[0]
@@ -202,35 +255,38 @@ def student_screen():
                             time.sleep(0.5)
                             st.rerun()
                     else:
-                        st.info('Face not recognized in the system. Register your profile below or sign in via profile select.')
+                        st.info('Face not recognized in our database. Register below to save your profile permanently.')
                         show_registration = True
 
         st.divider()
 
-        # REGISTRATION EXPANDER / CONTAINER
-        if show_registration or st.checkbox("Register New Student Profile", value=show_registration):
+        # REGISTRATION
+        if show_registration or st.checkbox("Register as a New Student Profile", value=show_registration):
             st.markdown(textwrap.dedent("""\
 <div style="margin-top: 8px; margin-bottom: 12px;">
-<h3 style="font-size: 1.15rem; font-weight: 700; color: #0F172A; margin: 0 0 4px 0;">New Profile Registration</h3>
-<p style="color: #64748B; font-size: 0.88rem; margin: 0;">Save your biometric face and voice profile for instant class check-ins.</p>
+<div style="display: inline-block; background: #ECFDF5; color: #047857; border: 1px solid #A7F3D0; padding: 2px 8px; border-radius: 6px; font-size: 0.74rem; font-weight: 700; text-transform: uppercase; margin-bottom: 8px;">
+Student Registration
+</div>
+<h3 style="font-size: 1.25rem; font-weight: 800; color: #0F172A; margin: 0 0 4px 0;">New Profile Enrollment</h3>
+<p style="color: #64748B; font-size: 0.88rem; margin: 0;">Save your face and voice profile permanently for automated class check-in.</p>
 </div>\
 """), unsafe_allow_html=True)
             
             new_name = st.text_input("Full Name", placeholder='e.g. Hamza Rizvi')
 
-            reg_photo = st.file_uploader("Profile Face Photo", type=['jpg', 'jpeg', 'png'], key="reg_photo_uploader")
+            reg_photo = st.file_uploader("Upload Face Photo for Registration", type=['jpg', 'jpeg', 'png'], key="reg_photo_uploader")
             if reg_photo is None and captured_img_np is not None:
-                st.info("Using captured photo from camera for registration.")
+                st.info("Using snapshot from camera for registration.")
 
-            st.markdown("<p style='font-size: 0.9rem; font-weight: 600; color: #334155; margin-top: 10px; margin-bottom: 4px;'>Optional: Voice Enrollment</p>", unsafe_allow_html=True)
+            st.markdown("<p style='font-size: 0.9rem; font-weight: 600; color: #334155; margin-top: 10px; margin-bottom: 4px;'>Optional: Voice Profile Enrollment</p>", unsafe_allow_html=True)
             audio_data = None
             try:
-                audio_data = st.audio_input('Record a short phrase (e.g. "I am present")')
+                audio_data = st.audio_input('Record roll-call phrase (e.g. "I am present")')
             except Exception:
                 pass
 
             st.write("")
-            if st.button('Save Student Profile', type='primary', use_container_width=True):
+            if st.button('Save Profile & Enter Portal', type='primary', use_container_width=True):
                 if new_name:
                     target_img_np = None
                     if reg_photo is not None:
@@ -239,7 +295,7 @@ def student_screen():
                         target_img_np = captured_img_np
 
                     if target_img_np is not None:
-                        with st.spinner('Registering profile features...'):
+                        with st.spinner('Analyzing facial vectors...'):
                             encodings = get_face_embeddings(target_img_np)
                             if encodings:
                                 face_emb = encodings[0].tolist()
@@ -254,13 +310,13 @@ def student_screen():
                                         st.session_state.is_logged_in = True
                                         st.session_state.user_role = 'student'
                                         st.session_state.student_data = response_data[0]
-                                        st.toast(f'Profile registered successfully! Welcome {new_name}.')
+                                        st.toast(f'Profile created! Welcome {new_name}.')
                                         time.sleep(0.5)
                                         st.rerun()
                                 except Exception as e:
-                                    st.error(f"Database connection error: {e}")
+                                    st.error(f"Database error: {e}")
                             else:
-                                st.error("No distinct face detected in the photo. Please use a clearer picture.")
+                                st.error("No distinct face detected. Please use a clearer photo with good lighting.")
                     else:
                         st.warning("Please capture or upload a face photo for registration.")
                 else:

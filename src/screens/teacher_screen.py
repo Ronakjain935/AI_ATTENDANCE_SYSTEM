@@ -38,17 +38,26 @@ def teacher_screen():
 
 def teacher_dashboard():
     teacher_data = st.session_state.teacher_data
-    
+    teacher_id = teacher_data['teacher_id']
+    teacher_name = teacher_data.get('name', 'Instructor')
+    initials = "".join([part[0] for part in teacher_name.split()][:2]).upper() if teacher_name else "IN"
+
+    # Top App Shell Header
     top_col1, top_col2 = st.columns([1.5, 1], vertical_alignment='center')
     with top_col1:
         header_dashboard()
     with top_col2:
-        u_col1, u_col2 = st.columns([2, 1], vertical_alignment='center')
+        u_col1, u_col2 = st.columns([2.2, 1], vertical_alignment='center')
         with u_col1:
             st.markdown(textwrap.dedent(f"""\
+<div style="display: flex; align-items: center; justify-content: flex-end; gap: 10px;">
 <div style="text-align: right;">
-<span style="font-size: 0.8rem; color: #64748B; font-weight: 500;">Signed in as</span>
-<div style="font-size: 0.95rem; font-weight: 700; color: #0F172A; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{teacher_data['name']}</div>
+<div style="font-size: 0.92rem; font-weight: 700; color: #0F172A; white-space: nowrap;">{teacher_name}</div>
+<span style="font-size: 0.74rem; background: #EEF2FF; color: #4338CA; border: 1px solid #E0E7FF; padding: 1px 6px; border-radius: 4px; font-weight: 700;">Instructor</span>
+</div>
+<div style="width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(135deg, #4F46E5 0%, #6366F1 100%); color: #FFFFFF; font-weight: 700; font-size: 0.88rem; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(79, 70, 229, 0.25);">
+{initials}
+</div>
 </div>\
 """), unsafe_allow_html=True)
         with u_col2:
@@ -58,57 +67,97 @@ def teacher_dashboard():
                     del st.session_state.teacher_data
                 st.rerun()
 
+    # Pre-fetch stats for top KPI row
+    subjects = get_teacher_subjects(teacher_id) or []
+    records = get_attendance_for_teacher(teacher_id) or []
+    total_students_enrolled = sum(s.get('total_students', 0) for s in subjects)
+    
+    sessions_keys = set((r.get('timestamp'), r.get('subject_id')) for r in records if r.get('timestamp'))
+    total_sessions_count = len(sessions_keys)
+
+    # Executive KPI Metric Bar
+    kpi1, kpi2, kpi3 = st.columns(3)
+    with kpi1:
+        st.markdown(textwrap.dedent(f"""\
+<div style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 12px; padding: 14px 18px; box-shadow: 0 1px 2px rgba(0,0,0,0.02);">
+<div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+<span style="color: #64748B; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;">Active Courses</span>
+<span style="font-size: 1.1rem;">📚</span>
+</div>
+<div style="font-size: 1.6rem; font-weight: 800; color: #0F172A; font-family: 'Outfit', sans-serif;">{len(subjects)}</div>
+</div>\
+"""), unsafe_allow_html=True)
+
+    with kpi2:
+        st.markdown(textwrap.dedent(f"""\
+<div style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 12px; padding: 14px 18px; box-shadow: 0 1px 2px rgba(0,0,0,0.02);">
+<div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+<span style="color: #64748B; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;">Total Enrolled</span>
+<span style="font-size: 1.1rem;">👥</span>
+</div>
+<div style="font-size: 1.6rem; font-weight: 800; color: #0F172A; font-family: 'Outfit', sans-serif;">{total_students_enrolled}</div>
+</div>\
+"""), unsafe_allow_html=True)
+
+    with kpi3:
+        st.markdown(textwrap.dedent(f"""\
+<div style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 12px; padding: 14px 18px; box-shadow: 0 1px 2px rgba(0,0,0,0.02);">
+<div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+<span style="color: #64748B; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;">Sessions Logged</span>
+<span style="font-size: 1.1rem;">📋</span>
+</div>
+<div style="font-size: 1.6rem; font-weight: 800; color: #0F172A; font-family: 'Outfit', sans-serif;">{total_sessions_count}</div>
+</div>\
+"""), unsafe_allow_html=True)
+
     st.write("")
 
     if "current_teacher_tab" not in st.session_state:
         st.session_state.current_teacher_tab = 'take_attendance'
 
-    # Professional Segmented Tab Bar
+    # Segmented Tab Navigation Bar
     tab1, tab2, tab3 = st.columns(3)
 
     with tab1:
-        type1 = "primary" if st.session_state.current_teacher_tab == 'take_attendance' else "tertiary"
-        if st.button('Take Attendance', type=type1, use_container_width=True):
+        type1 = "primary" if st.session_state.current_teacher_tab == 'take_attendance' else "secondary"
+        if st.button('📷 Take Attendance', type=type1, use_container_width=True):
             st.session_state.current_teacher_tab = 'take_attendance'
             st.rerun()
 
     with tab2:
-        type2 = "primary" if st.session_state.current_teacher_tab == 'manage_subjects' else "tertiary"
-        if st.button('Manage Courses', type=type2, use_container_width=True):
+        type2 = "primary" if st.session_state.current_teacher_tab == 'manage_subjects' else "secondary"
+        if st.button('📚 Manage Courses', type=type2, use_container_width=True):
             st.session_state.current_teacher_tab = 'manage_subjects'
             st.rerun()
 
     with tab3:
-        type3 = "primary" if st.session_state.current_teacher_tab == 'attendance_records' else "tertiary"
-        if st.button('Attendance History', type=type3, use_container_width=True):
+        type3 = "primary" if st.session_state.current_teacher_tab == 'attendance_records' else "secondary"
+        if st.button('📋 Attendance History', type=type3, use_container_width=True):
             st.session_state.current_teacher_tab = 'attendance_records'
             st.rerun()
 
     st.divider()
 
     if st.session_state.current_teacher_tab == "take_attendance":
-        teacher_tab_take_attendance()
+        teacher_tab_take_attendance(subjects)
     elif st.session_state.current_teacher_tab == "manage_subjects":
-        teacher_tab_manage_subjects()
+        teacher_tab_manage_subjects(subjects)
     elif st.session_state.current_teacher_tab == "attendance_records":
-        teacher_tab_attendance_records()
+        teacher_tab_attendance_records(records)
 
     footer_dashboard()
 
 
-def teacher_tab_take_attendance():
-    teacher_id = st.session_state.teacher_data['teacher_id']
+def teacher_tab_take_attendance(subjects):
     st.markdown(textwrap.dedent("""\
 <div>
-<h2 style="font-size: 1.4rem; font-weight: 700; color: #0F172A; margin: 0 0 4px 0;">Take Attendance</h2>
-<p style="color: #64748B; font-size: 0.9rem; margin: 0 0 1rem 0;">Select a course and upload classroom photos or record roll call audio.</p>
+<h2 style="font-size: 1.45rem; font-weight: 800; color: #0F172A; margin: 0 0 4px 0;">Take Attendance</h2>
+<p style="color: #64748B; font-size: 0.9rem; margin: 0 0 1.25rem 0;">Select a course and upload classroom photos or record roll-call audio.</p>
 </div>\
 """), unsafe_allow_html=True)
 
     if 'attendance_images' not in st.session_state:
         st.session_state.attendance_images = []
-
-    subjects = get_teacher_subjects(teacher_id)
 
     if not subjects:
         st.info('You have not created any courses yet. Go to "Manage Courses" to set up your first class.')
@@ -132,7 +181,7 @@ def teacher_tab_take_attendance():
     if st.session_state.attendance_images:
         st.markdown(textwrap.dedent(f"""\
 <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-<span style="font-size: 0.95rem; font-weight: 600; color: #0F172A;">Classroom Photos ({len(st.session_state.attendance_images)})</span>
+<span style="font-size: 0.95rem; font-weight: 700; color: #0F172A;">Classroom Photos ({len(st.session_state.attendance_images)})</span>
 </div>\
 """), unsafe_allow_html=True)
         gallery_cols = st.columns(4)
@@ -150,7 +199,7 @@ def teacher_tab_take_attendance():
             st.rerun()
 
     with c2:
-        if st.button('Run Face Recognition', use_container_width=True, type='primary', disabled=not has_photos):
+        if st.button('🔍 Run Face Recognition', use_container_width=True, type='primary', disabled=not has_photos):
             with st.spinner('Scanning classroom photos...'):
                 all_detected_ids = {}
                 total_faces_scanned = 0
@@ -198,27 +247,26 @@ def teacher_tab_take_attendance():
                     attendance_result_dialog(pd.DataFrame(results), attendance_to_log)
 
     with c3:
-        if st.button('Voice Attendance', type='secondary', use_container_width=True):
+        if st.button('🎙️ Voice Attendance', type='secondary', use_container_width=True):
             voice_attendance_dialog(selected_subject_id)
 
 
-def teacher_tab_manage_subjects():
+def teacher_tab_manage_subjects(subjects):
     teacher_id = st.session_state.teacher_data['teacher_id']
     col1, col2 = st.columns([3, 1], vertical_alignment='center')
     with col1:
         st.markdown(textwrap.dedent("""\
 <div>
-<h2 style="font-size: 1.4rem; font-weight: 700; color: #0F172A; margin: 0 0 4px 0;">Manage Courses</h2>
+<h2 style="font-size: 1.45rem; font-weight: 800; color: #0F172A; margin: 0 0 4px 0;">Manage Courses</h2>
 <p style="color: #64748B; font-size: 0.9rem; margin: 0;">Create and organize your active classes and student rosters.</p>
 </div>\
 """), unsafe_allow_html=True)
 
     with col2:
-        if st.button('Create Course', use_container_width=True, type='primary'):
+        if st.button('➕ Create Course', use_container_width=True, type='primary'):
             create_subject_dialog(teacher_id)
 
     st.write("")
-    subjects = get_teacher_subjects(teacher_id)
     if subjects:
         for sub in subjects:
             stats = [
@@ -228,10 +276,10 @@ def teacher_tab_manage_subjects():
             def action_buttons():
                 bcol1, bcol2 = st.columns(2)
                 with bcol1:
-                    if st.button(f"Share Code: {sub['subject_code']}", key=f"share_{sub['subject_code']}", type='tertiary', use_container_width=True):
+                    if st.button(f"🔗 Share Code: {sub['subject_code']}", key=f"share_{sub['subject_code']}", type='secondary', use_container_width=True):
                         share_subject_dialog(sub['name'], sub['subject_code'])
                 with bcol2:
-                    if st.button("Delete Course", key=f"del_{sub['subject_id']}", type='secondary', use_container_width=True):
+                    if st.button("🗑️ Delete Course", key=f"del_{sub['subject_id']}", type='tertiary', use_container_width=True):
                         delete_subject(sub['subject_id'])
                         st.toast(f"Deleted {sub['name']} successfully!")
                         time.sleep(0.5)
@@ -294,13 +342,10 @@ def teacher_tab_manage_subjects():
                 st.divider()
 
 
-def teacher_tab_attendance_records():
-    teacher_id = st.session_state.teacher_data['teacher_id']
-    records = get_attendance_for_teacher(teacher_id)
-
+def teacher_tab_attendance_records(records):
     st.markdown(textwrap.dedent("""\
 <div>
-<h2 style="font-size: 1.4rem; font-weight: 700; color: #0F172A; margin: 0 0 4px 0;">Attendance History</h2>
+<h2 style="font-size: 1.45rem; font-weight: 800; color: #0F172A; margin: 0 0 4px 0;">Attendance History</h2>
 <p style="color: #64748B; font-size: 0.9rem; margin: 0;">Comprehensive log of past class sessions and attendance rosters.</p>
 </div>\
 """), unsafe_allow_html=True)
@@ -347,6 +392,7 @@ def teacher_tab_attendance_records():
         st.markdown(f"<p style='color: #475569; font-weight: 600; margin: 0;'>Total Logged Sessions: <span style='color: #4F46E5; font-weight: 700;'>{len(sessions_map)}</span></p>", unsafe_allow_html=True)
     with col2:
         if st.button("Clear All History", type="tertiary", use_container_width=True):
+            teacher_id = st.session_state.teacher_data['teacher_id']
             if st.session_state.get('confirm_clear_all'):
                 delete_all_attendance_for_teacher(teacher_id)
                 st.session_state.confirm_clear_all = False
@@ -409,9 +455,12 @@ def teacher_screen_login():
     st.write("")
     with st.container(border=True):
         st.markdown(textwrap.dedent("""\
-<div style="margin-bottom: 12px;">
-<h2 style="font-size: 1.35rem; font-weight: 700; color: #0F172A; margin: 0 0 4px 0;">Teacher Sign In</h2>
-<p style="color: #64748B; font-size: 0.88rem; margin: 0;">Enter your credentials to access your instructor dashboard.</p>
+<div style="margin-bottom: 14px;">
+<div style="display: inline-block; background: #EEF2FF; color: #4338CA; border: 1px solid #E0E7FF; padding: 2px 8px; border-radius: 6px; font-size: 0.74rem; font-weight: 700; text-transform: uppercase; margin-bottom: 8px;">
+Instructor Authentication
+</div>
+<h2 style="font-size: 1.45rem; font-weight: 800; color: #0F172A; margin: 0 0 4px 0;">Teacher Sign In</h2>
+<p style="color: #64748B; font-size: 0.88rem; margin: 0;">Access your classroom rosters and take attendance.</p>
 </div>\
 """), unsafe_allow_html=True)
 
@@ -465,8 +514,11 @@ def teacher_screen_register():
     st.write("")
     with st.container(border=True):
         st.markdown(textwrap.dedent("""\
-<div style="margin-bottom: 12px;">
-<h2 style="font-size: 1.35rem; font-weight: 700; color: #0F172A; margin: 0 0 4px 0;">Instructor Registration</h2>
+<div style="margin-bottom: 14px;">
+<div style="display: inline-block; background: #ECFDF5; color: #047857; border: 1px solid #A7F3D0; padding: 2px 8px; border-radius: 6px; font-size: 0.74rem; font-weight: 700; text-transform: uppercase; margin-bottom: 8px;">
+New Account Setup
+</div>
+<h2 style="font-size: 1.45rem; font-weight: 800; color: #0F172A; margin: 0 0 4px 0;">Instructor Registration</h2>
 <p style="color: #64748B; font-size: 0.88rem; margin: 0;">Set up your educator account to manage classroom attendance.</p>
 </div>\
 """), unsafe_allow_html=True)
