@@ -32,9 +32,9 @@ def student_dashboard():
 <div style="display: flex; align-items: center; justify-content: flex-end; gap: 10px;">
 <div style="text-align: right;">
 <div style="font-size: 0.92rem; font-weight: 700; color: #0F172A; white-space: nowrap;">{student_name}</div>
-<span style="font-size: 0.74rem; background: #EEF2FF; color: #4338CA; border: 1px solid #E0E7FF; padding: 1px 6px; border-radius: 4px; font-weight: 700;">Student</span>
+<span style="font-size: 0.72rem; background: #0F172A; color: #F8FAFC; border: 1px solid #1E293B; padding: 2px 7px; border-radius: 4px; font-weight: 700; letter-spacing: 0.04em;">STUDENT</span>
 </div>
-<div style="width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(135deg, #4F46E5 0%, #38BDF8 100%); color: #FFFFFF; font-weight: 700; font-size: 0.88rem; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(79, 70, 229, 0.25);">
+<div style="width: 38px; height: 38px; border-radius: 6px; background: linear-gradient(135deg, #0F172A 0%, #065F46 100%); color: #FFFFFF; font-weight: 700; font-size: 0.88rem; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(15, 23, 42, 0.2);">
 {initials}
 </div>
 </div>\
@@ -66,39 +66,39 @@ def student_dashboard():
 
     overall_attendance_pct = int((total_attended_all / total_sessions_all * 100)) if total_sessions_all > 0 else 100
 
-    # Student Executive KPI Row
+    # Classic Student Executive KPI Row
     kpi1, kpi2, kpi3 = st.columns(3)
     with kpi1:
         st.markdown(textwrap.dedent(f"""\
-<div style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 12px; padding: 14px 18px; box-shadow: 0 1px 2px rgba(0,0,0,0.02);">
+<div style="background: #FFFFFF; border: 1px solid #CBD5E1; border-top: 3px solid #1E3A8A; border-radius: 8px; padding: 14px 18px; box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);">
 <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
-<span style="color: #64748B; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;">Enrolled Courses</span>
+<span style="color: #475569; font-size: 0.74rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;">Enrolled Courses</span>
 <span style="font-size: 1.1rem;">📚</span>
 </div>
-<div style="font-size: 1.6rem; font-weight: 800; color: #0F172A; font-family: 'Outfit', sans-serif;">{len(subjects)}</div>
+<div style="font-size: 1.75rem; font-weight: 700; color: #0F172A; font-family: 'Lora', Georgia, serif;">{len(subjects)}</div>
 </div>\
 """), unsafe_allow_html=True)
 
     with kpi2:
         st.markdown(textwrap.dedent(f"""\
-<div style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 12px; padding: 14px 18px; box-shadow: 0 1px 2px rgba(0,0,0,0.02);">
+<div style="background: #FFFFFF; border: 1px solid #CBD5E1; border-top: 3px solid #047857; border-radius: 8px; padding: 14px 18px; box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);">
 <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
-<span style="color: #64748B; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;">Classes Attended</span>
+<span style="color: #475569; font-size: 0.74rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;">Classes Attended</span>
 <span style="font-size: 1.1rem;">✅</span>
 </div>
-<div style="font-size: 1.6rem; font-weight: 800; color: #0F172A; font-family: 'Outfit', sans-serif;">{total_attended_all} / {total_sessions_all}</div>
+<div style="font-size: 1.75rem; font-weight: 700; color: #0F172A; font-family: 'Lora', Georgia, serif;">{total_attended_all} / {total_sessions_all}</div>
 </div>\
 """), unsafe_allow_html=True)
 
     with kpi3:
-        pct_color = "#10B981" if overall_attendance_pct >= 75 else "#F59E0B"
+        pct_color = "#047857" if overall_attendance_pct >= 75 else "#B45309"
         st.markdown(textwrap.dedent(f"""\
-<div style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 12px; padding: 14px 18px; box-shadow: 0 1px 2px rgba(0,0,0,0.02);">
+<div style="background: #FFFFFF; border: 1px solid #CBD5E1; border-top: 3px solid {pct_color}; border-radius: 8px; padding: 14px 18px; box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);">
 <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
-<span style="color: #64748B; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;">Attendance Rate</span>
+<span style="color: #475569; font-size: 0.74rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;">Attendance Rate</span>
 <span style="font-size: 1.1rem;">📊</span>
 </div>
-<div style="font-size: 1.6rem; font-weight: 800; color: {pct_color}; font-family: 'Outfit', sans-serif;">{overall_attendance_pct}%</div>
+<div style="font-size: 1.75rem; font-weight: 700; color: {pct_color}; font-family: 'Lora', Georgia, serif;">{overall_attendance_pct}%</div>
 </div>\
 """), unsafe_allow_html=True)
 
@@ -108,8 +108,8 @@ def student_dashboard():
     with c1:
         st.markdown(textwrap.dedent("""\
 <div>
-<h2 style="font-size: 1.45rem; font-weight: 800; color: #0F172A; margin: 0 0 4px 0;">My Active Courses</h2>
-<p style="color: #64748B; font-size: 0.9rem; margin: 0;">Registered subjects and your attendance standing.</p>
+<h2 style="font-size: 1.45rem; font-weight: 700; font-family: 'Lora', Georgia, serif; color: #0F172A; margin: 0 0 4px 0;">My Registered Courses</h2>
+<p style="color: #475569; font-size: 0.88rem; margin: 0;">Institutional subjects and your real-time attendance standing.</p>
 </div>\
 """), unsafe_allow_html=True)
     with c2:

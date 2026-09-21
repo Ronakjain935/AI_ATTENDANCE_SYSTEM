@@ -4,11 +4,11 @@ def style_background_home():
     st.markdown("""
 <style>
     .stApp {
-        background-color: #F8FAFC !important;
+        background-color: #F8F9FA !important;
         background-image: 
             radial-gradient(#E2E8F0 1px, transparent 1px),
-            radial-gradient(at 0% 0%, rgba(79, 70, 229, 0.04) 0px, transparent 50%),
-            radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.03) 0px, transparent 50%) !important;
+            radial-gradient(at 0% 0%, rgba(30, 58, 138, 0.03) 0px, transparent 50%),
+            radial-gradient(at 100% 100%, rgba(15, 23, 42, 0.02) 0px, transparent 50%) !important;
         background-size: 24px 24px, 100% 100%, 100% 100% !important;
         background-attachment: fixed !important;
         color: #0F172A !important;
@@ -21,10 +21,10 @@ def style_background_dashboard():
     st.markdown("""
 <style>
     .stApp {
-        background-color: #F8FAFC !important;
+        background-color: #F8F9FA !important;
         background-image: 
             radial-gradient(#E2E8F0 1px, transparent 1px),
-            radial-gradient(at 50% 0%, rgba(79, 70, 229, 0.03) 0px, transparent 40%) !important;
+            radial-gradient(at 50% 0%, rgba(30, 58, 138, 0.02) 0px, transparent 40%) !important;
         background-size: 24px 24px, 100% 100% !important;
         background-attachment: fixed !important;
         color: #0F172A !important;
@@ -36,7 +36,7 @@ def style_background_dashboard():
 def style_base_layout():
     st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;0,700;1,400;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
 
     html, body, p, div, label, span {
         font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, sans-serif !important;
@@ -44,13 +44,13 @@ def style_base_layout():
     }
 
     h1, h2, h3, h4, h5, h6 {
-        font-family: 'Outfit', 'Plus Jakarta Sans', sans-serif !important;
+        font-family: 'Lora', Georgia, 'Times New Roman', serif !important;
         font-weight: 700 !important;
-        letter-spacing: -0.025em !important;
+        letter-spacing: -0.015em !important;
         color: #0F172A !important;
     }
 
-    /* Minimal Modern Scrollbar */
+    /* Classic Minimal Scrollbar */
     ::-webkit-scrollbar {
         width: 6px;
         height: 6px;
@@ -60,7 +60,7 @@ def style_base_layout():
     }
     ::-webkit-scrollbar-thumb {
         background: #CBD5E1;
-        border-radius: 999px;
+        border-radius: 4px;
     }
     ::-webkit-scrollbar-thumb:hover {
         background: #94A3B8;
@@ -83,33 +83,34 @@ def style_base_layout():
     .block-container {
         padding-top: 1.25rem !important;
         padding-bottom: 3rem !important;
-        max-width: 1100px !important;
+        max-width: 1120px !important;
     }
 
-    /* Form Labels */
+    /* Form Labels - Classic Editorial Style */
     label, label p, label span, [data-testid="stWidgetLabel"], [data-testid="stWidgetLabel"] p {
         color: #334155 !important;
         font-weight: 600 !important;
-        font-size: 0.86rem !important;
-        letter-spacing: 0.01em !important;
+        font-size: 0.85rem !important;
+        letter-spacing: 0.02em !important;
         margin-bottom: 5px !important;
+        text-transform: uppercase;
     }
 
-    /* Inputs, Numbers & TextAreas */
+    /* Classic Inputs, Numbers & TextAreas */
     .stTextInput input, .stNumberInput input, .stTextArea textarea {
         background-color: #FFFFFF !important;
         color: #0F172A !important;
-        border-radius: 10px !important;
-        border: 1px solid #D1D5DB !important;
+        border-radius: 8px !important;
+        border: 1px solid #CBD5E1 !important;
         padding: 10px 14px !important;
         font-size: 0.92rem !important;
         font-weight: 500 !important;
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03) !important;
         transition: all 0.15s ease !important;
     }
     .stTextInput input:focus, .stNumberInput input:focus, .stTextArea textarea:focus {
-        border-color: #4F46E5 !important;
-        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15), 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+        border-color: #1E3A8A !important;
+        box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.12), 0 1px 2px rgba(15, 23, 42, 0.04) !important;
         outline: none !important;
     }
     .stTextInput input::placeholder, .stTextArea textarea::placeholder {
@@ -121,16 +122,16 @@ def style_base_layout():
     div[data-baseweb="select"] > div {
         background-color: #FFFFFF !important;
         color: #0F172A !important;
-        border-radius: 10px !important;
-        border: 1px solid #D1D5DB !important;
-        min-height: 44px !important;
+        border-radius: 8px !important;
+        border: 1px solid #CBD5E1 !important;
+        min-height: 42px !important;
         padding-left: 8px !important;
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03) !important;
         transition: all 0.15s ease !important;
     }
     div[data-baseweb="select"]:focus-within > div {
-        border-color: #4F46E5 !important;
-        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15) !important;
+        border-color: #1E3A8A !important;
+        box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.12) !important;
     }
     div[data-baseweb="select"] span, div[data-baseweb="select"] div {
         color: #0F172A !important;
@@ -141,118 +142,118 @@ def style_base_layout():
     /* Dropdown Menus */
     div[data-baseweb="popover"], div[data-baseweb="menu"], ul[role="listbox"] {
         background-color: #FFFFFF !important;
-        border-radius: 12px !important;
-        border: 1px solid #E2E8F0 !important;
+        border-radius: 10px !important;
+        border: 1px solid #CBD5E1 !important;
         box-shadow: 0 12px 28px -4px rgba(15, 23, 42, 0.12), 0 4px 8px -2px rgba(15, 23, 42, 0.06) !important;
-        padding: 5px !important;
+        padding: 6px !important;
     }
     li[role="option"] {
         color: #334155 !important;
         background-color: #FFFFFF !important;
         font-weight: 500 !important;
         font-size: 0.9rem !important;
-        border-radius: 8px !important;
+        border-radius: 6px !important;
         padding: 9px 12px !important;
         margin-bottom: 2px !important;
-        transition: background-color 0.1s ease !important;
+        transition: background-color 0.12s ease !important;
     }
     li[role="option"]:hover, li[aria-selected="true"] {
-        background-color: #EEF2FF !important;
-        color: #4338CA !important;
+        background-color: #F1F5F9 !important;
+        color: #0F172A !important;
+        font-weight: 600 !important;
     }
 
     /* File Uploader Container */
     [data-testid="stFileUploader"] {
         background: #FFFFFF !important;
-        border-radius: 14px !important;
+        border-radius: 10px !important;
         border: 1.5px dashed #CBD5E1 !important;
-        padding: 1.4rem !important;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.02) !important;
+        padding: 1.5rem !important;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.02) !important;
         transition: border-color 0.15s ease, background 0.15s ease !important;
     }
     [data-testid="stFileUploader"]:hover {
-        border-color: #4F46E5 !important;
-        background: #FDFEFE !important;
+        border-color: #1E3A8A !important;
+        background: #FAFAFA !important;
     }
     [data-testid="stFileUploader"] * {
         color: #334155 !important;
     }
 
-    /* Luxury Tactile Button System */
+    /* Classic Executive Button System */
     .stButton > button {
         font-family: 'Plus Jakarta Sans', sans-serif !important;
         font-weight: 600 !important;
-        border-radius: 10px !important;
-        padding: 10px 18px !important;
-        min-height: 44px !important;
-        font-size: 0.91rem !important;
-        letter-spacing: 0.01em !important;
+        border-radius: 8px !important;
+        padding: 9px 18px !important;
+        min-height: 42px !important;
+        font-size: 0.90rem !important;
+        letter-spacing: 0.015em !important;
         display: inline-flex !important;
         align-items: center !important;
         justify-content: center !important;
         gap: 8px !important;
         cursor: pointer !important;
-        transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        transition: all 0.15s ease !important;
     }
     .stButton > button:hover {
-        transform: translateY(-1.5px) !important;
+        transform: translateY(-1px) !important;
     }
     .stButton > button:active {
         transform: translateY(0) !important;
     }
 
-    /* Primary Button (Depth Indigo) */
+    /* Primary Button: Classic Deep Oxford Navy */
     .stButton > button[kind="primary"],
     .stButton > button[data-testid="stBaseButton-primary"] {
-        background: linear-gradient(180deg, #4F46E5 0%, #4338CA 100%) !important;
+        background: linear-gradient(180deg, #1E293B 0%, #0F172A 100%) !important;
         color: #FFFFFF !important;
-        border: 1px solid #3730A3 !important;
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+        border: 1px solid #0A192F !important;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
     }
     .stButton > button[kind="primary"]:hover,
     .stButton > button[data-testid="stBaseButton-primary"]:hover {
-        background: linear-gradient(180deg, #4338CA 0%, #3730A3 100%) !important;
-        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+        background: linear-gradient(180deg, #0F172A 0%, #020617 100%) !important;
+        box-shadow: 0 4px 10px rgba(15, 23, 42, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
     }
     .stButton > button[kind="primary"] *,
     .stButton > button[data-testid="stBaseButton-primary"] * {
         color: #FFFFFF !important;
     }
 
-    /* Secondary Button (Crisp White / Slate) */
+    /* Secondary Button: Crisp Classic Slate & Porcelain */
     .stButton > button[kind="secondary"],
     .stButton > button[data-testid="stBaseButton-secondary"] {
         background: linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 100%) !important;
         color: #0F172A !important;
         border: 1px solid #CBD5E1 !important;
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
+        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
     }
     .stButton > button[kind="secondary"]:hover,
     .stButton > button[data-testid="stBaseButton-secondary"]:hover {
         background: #F1F5F9 !important;
         border-color: #94A3B8 !important;
         color: #0F172A !important;
-        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08) !important;
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08) !important;
     }
     .stButton > button[kind="secondary"] *,
     .stButton > button[data-testid="stBaseButton-secondary"] * {
         color: #0F172A !important;
     }
 
-    /* Tertiary Button (Subtle Outline / Minimal) */
+    /* Tertiary Button: Minimal Classic Outline */
     .stButton > button[kind="tertiary"],
     .stButton > button[data-testid="stBaseButton-tertiary"] {
         background: #FFFFFF !important;
         color: #475569 !important;
         border: 1px solid #E2E8F0 !important;
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03) !important;
+        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.02) !important;
     }
     .stButton > button[kind="tertiary"]:hover,
     .stButton > button[data-testid="stBaseButton-tertiary"]:hover {
         background: #F8FAFC !important;
         border-color: #CBD5E1 !important;
         color: #0F172A !important;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05) !important;
     }
     .stButton > button[kind="tertiary"] *,
     .stButton > button[data-testid="stBaseButton-tertiary"] * {
@@ -266,30 +267,30 @@ def style_base_layout():
         box-shadow: none !important;
     }
 
-    /* Containers & Card Wrappers */
+    /* Containers & Card Wrappers - Classic Academic Elegance */
     [data-testid="stVerticalBlockBorderWrapper"] {
         background: #FFFFFF !important;
-        border-radius: 16px !important;
-        padding: 1.75rem !important;
-        border: 1px solid rgba(226, 232, 240, 0.9) !important;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.04), 0 2px 4px -2px rgba(0, 0, 0, 0.02) !important;
+        border-radius: 12px !important;
+        padding: 1.6rem !important;
+        border: 1px solid #E2E8F0 !important;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04), 0 4px 12px -2px rgba(15, 23, 42, 0.02) !important;
         transition: border-color 0.15s ease, box-shadow 0.15s ease !important;
     }
 
-    /* Clean Dialog & Modal System */
+    /* Classic Modal System */
     div[data-baseweb="modal"] {
-        background-color: rgba(15, 23, 42, 0.5) !important;
-        backdrop-filter: blur(6px) !important;
+        background-color: rgba(15, 23, 42, 0.6) !important;
+        backdrop-filter: blur(5px) !important;
     }
     div[data-baseweb="modal"] > div,
     div[role="dialog"],
     [data-testid="stModal"] > div {
         background-color: #FFFFFF !important;
         color: #0F172A !important;
-        border-radius: 18px !important;
-        border: 1px solid #E2E8F0 !important;
-        box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25) !important;
-        padding: 2.2rem !important;
+        border-radius: 14px !important;
+        border: 1px solid #CBD5E1 !important;
+        box-shadow: 0 20px 45px -10px rgba(15, 23, 42, 0.22) !important;
+        padding: 2rem !important;
     }
 
     [data-testid="stDialogHeader"],
@@ -303,10 +304,10 @@ def style_base_layout():
     div[data-baseweb="modal"] h2,
     [data-testid="stDialog"] h2 {
         color: #0F172A !important;
-        font-family: 'Outfit', sans-serif !important;
+        font-family: 'Lora', Georgia, serif !important;
         font-size: 1.45rem !important;
         font-weight: 700 !important;
-        letter-spacing: -0.02em !important;
+        letter-spacing: -0.015em !important;
         margin: 0 !important;
     }
 
@@ -316,7 +317,7 @@ def style_base_layout():
     [data-testid="stDialog"] button[aria-label="Close"] {
         color: #64748B !important;
         background-color: #F1F5F9 !important;
-        border-radius: 8px !important;
+        border-radius: 6px !important;
         transition: all 0.15s ease !important;
     }
     div[data-baseweb="modal"] button[aria-label="Close"]:hover {
@@ -327,23 +328,29 @@ def style_base_layout():
     /* Dataframe / Table */
     [data-testid="stDataFrame"] {
         background-color: #FFFFFF !important;
-        border-radius: 12px !important;
+        border-radius: 10px !important;
         border: 1px solid #E2E8F0 !important;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03) !important;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.02) !important;
     }
 
     /* Dividers */
     hr {
         border-color: #E2E8F0 !important;
-        margin: 1.75rem 0 !important;
+        margin: 1.5rem 0 !important;
     }
 
     /* Expander */
     [data-testid="stExpander"] {
         background-color: #FFFFFF !important;
         border: 1px solid #E2E8F0 !important;
-        border-radius: 12px !important;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03) !important;
+        border-radius: 10px !important;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.02) !important;
+    }
+
+    /* Streamlit Status / Alert Boxes */
+    [data-testid="stAlert"] {
+        border-radius: 8px !important;
+        font-size: 0.9rem !important;
     }
 </style>
 """, unsafe_allow_html=True)

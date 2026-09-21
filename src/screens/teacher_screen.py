@@ -53,9 +53,9 @@ def teacher_dashboard():
 <div style="display: flex; align-items: center; justify-content: flex-end; gap: 10px;">
 <div style="text-align: right;">
 <div style="font-size: 0.92rem; font-weight: 700; color: #0F172A; white-space: nowrap;">{teacher_name}</div>
-<span style="font-size: 0.74rem; background: #EEF2FF; color: #4338CA; border: 1px solid #E0E7FF; padding: 1px 6px; border-radius: 4px; font-weight: 700;">Instructor</span>
+<span style="font-size: 0.72rem; background: #0F172A; color: #F8FAFC; border: 1px solid #1E293B; padding: 2px 7px; border-radius: 4px; font-weight: 700; letter-spacing: 0.04em;">FACULTY</span>
 </div>
-<div style="width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(135deg, #4F46E5 0%, #6366F1 100%); color: #FFFFFF; font-weight: 700; font-size: 0.88rem; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(79, 70, 229, 0.25);">
+<div style="width: 38px; height: 38px; border-radius: 6px; background: linear-gradient(135deg, #0F172A 0%, #1E3A8A 100%); color: #FFFFFF; font-weight: 700; font-size: 0.88rem; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(15, 23, 42, 0.2);">
 {initials}
 </div>
 </div>\
@@ -75,38 +75,38 @@ def teacher_dashboard():
     sessions_keys = set((r.get('timestamp'), r.get('subject_id')) for r in records if r.get('timestamp'))
     total_sessions_count = len(sessions_keys)
 
-    # Executive KPI Metric Bar
+    # Classic Executive KPI Metric Bar
     kpi1, kpi2, kpi3 = st.columns(3)
     with kpi1:
         st.markdown(textwrap.dedent(f"""\
-<div style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 12px; padding: 14px 18px; box-shadow: 0 1px 2px rgba(0,0,0,0.02);">
+<div style="background: #FFFFFF; border: 1px solid #CBD5E1; border-top: 3px solid #1E3A8A; border-radius: 8px; padding: 14px 18px; box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);">
 <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
-<span style="color: #64748B; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;">Active Courses</span>
+<span style="color: #475569; font-size: 0.74rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;">Active Courses</span>
 <span style="font-size: 1.1rem;">📚</span>
 </div>
-<div style="font-size: 1.6rem; font-weight: 800; color: #0F172A; font-family: 'Outfit', sans-serif;">{len(subjects)}</div>
+<div style="font-size: 1.75rem; font-weight: 700; color: #0F172A; font-family: 'Lora', Georgia, serif;">{len(subjects)}</div>
 </div>\
 """), unsafe_allow_html=True)
 
     with kpi2:
         st.markdown(textwrap.dedent(f"""\
-<div style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 12px; padding: 14px 18px; box-shadow: 0 1px 2px rgba(0,0,0,0.02);">
+<div style="background: #FFFFFF; border: 1px solid #CBD5E1; border-top: 3px solid #047857; border-radius: 8px; padding: 14px 18px; box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);">
 <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
-<span style="color: #64748B; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;">Total Enrolled</span>
+<span style="color: #475569; font-size: 0.74rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;">Total Enrolled</span>
 <span style="font-size: 1.1rem;">👥</span>
 </div>
-<div style="font-size: 1.6rem; font-weight: 800; color: #0F172A; font-family: 'Outfit', sans-serif;">{total_students_enrolled}</div>
+<div style="font-size: 1.75rem; font-weight: 700; color: #0F172A; font-family: 'Lora', Georgia, serif;">{total_students_enrolled}</div>
 </div>\
 """), unsafe_allow_html=True)
 
     with kpi3:
         st.markdown(textwrap.dedent(f"""\
-<div style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 12px; padding: 14px 18px; box-shadow: 0 1px 2px rgba(0,0,0,0.02);">
+<div style="background: #FFFFFF; border: 1px solid #CBD5E1; border-top: 3px solid #B45309; border-radius: 8px; padding: 14px 18px; box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);">
 <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
-<span style="color: #64748B; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;">Sessions Logged</span>
+<span style="color: #475569; font-size: 0.74rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;">Sessions Logged</span>
 <span style="font-size: 1.1rem;">📋</span>
 </div>
-<div style="font-size: 1.6rem; font-weight: 800; color: #0F172A; font-family: 'Outfit', sans-serif;">{total_sessions_count}</div>
+<div style="font-size: 1.75rem; font-weight: 700; color: #0F172A; font-family: 'Lora', Georgia, serif;">{total_sessions_count}</div>
 </div>\
 """), unsafe_allow_html=True)
 

@@ -5,8 +5,13 @@
 
   [![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
   [![Streamlit](https://img.shields.io/badge/Streamlit-FF4B4B?style=for-the-badge&logo=Streamlit&logoColor=white)](https://streamlit.io/)
+  [![Live Demo](https://img.shields.io/badge/Live%20Demo-aiattendancesystemgit--h.streamlit.app-1E3A8A?style=for-the-badge&logo=streamlit&logoColor=white)](https://aiattendancesystemgit-h.streamlit.app/)
   [![Supabase](https://img.shields.io/badge/Supabase-3FCF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com/)
   [![dlib](https://img.shields.io/badge/dlib-Face_Recognition-blue?style=for-the-badge)](http://dlib.net/)
+
+  <br>
+  
+  🌐 **Live Demo Application**: [https://aiattendancesystemgit-h.streamlit.app/](https://aiattendancesystemgit-h.streamlit.app/)
 </div>
 
 ---
