@@ -1,7 +1,12 @@
+import streamlit as st
 from src.database.config import supabase
 import bcrypt
 
-
+def clear_db_cache():
+    try:
+        st.cache_data.clear()
+    except Exception:
+        pass
 
 def hash_pass(pwd):
     return bcrypt.hashpw(pwd.encode(), bcrypt.gensalt()).decode()
@@ -16,11 +21,10 @@ def check_teacher_exists(username):
     return len(response.data) > 0 
 
 
-
 def create_teacher(username, password, name):
-
     data = { "username" : username, "password": hash_pass(password), "name": name}
     response = supabase.table("teachers").insert(data).execute()
+    clear_db_cache()
     return response.data
 
 
@@ -32,7 +36,7 @@ def teacher_login(username, password):
             return teacher
     return None
 
-
+@st.cache_data(ttl=15, show_spinner=False)
 def get_all_students():
     response = supabase.table('students').select("*").execute()
     return response.data
@@ -40,14 +44,17 @@ def get_all_students():
 def create_student(new_name, face_embedding=None, voice_embedding=None):
     data = {'name': new_name, 'face_embedding':face_embedding, "voice_embedding": voice_embedding}
     response = supabase.table('students').insert(data).execute()
+    clear_db_cache()
     return response.data
 
 
 def create_subject(subject_code, name, section, teacher_id):
     data = {"subject_code": subject_code, "name": name, "section": section, "teacher_id": teacher_id}
     response = supabase.table("subjects").insert(data).execute()
+    clear_db_cache()
     return response.data
 
+@st.cache_data(ttl=15, show_spinner=False)
 def get_teacher_subjects(teacher_id=None):
     try:
         # First query subjects specifically for this teacher
@@ -89,14 +96,16 @@ def get_teacher_subjects(teacher_id=None):
 def enroll_student_to_subject(student_id, subject_id):
     data = {'student_id': student_id, "subject_id": subject_id}
     response = supabase.table('subject_students').insert(data).execute()
+    clear_db_cache()
     return response.data
 
 
 def unenroll_student_to_subject(student_id, subject_id):
     response = supabase.table('subject_students').delete().eq('student_id', student_id).eq('subject_id', subject_id).execute()
+    clear_db_cache()
     return response.data
 
-
+@st.cache_data(ttl=15, show_spinner=False)
 def get_student_subjects(student_id):
     try:
         response = supabase.table('subject_students').select('*, subjects(*)').eq('student_id', student_id).execute()
@@ -104,7 +113,7 @@ def get_student_subjects(student_id):
     except Exception as e:
         return []
 
-
+@st.cache_data(ttl=15, show_spinner=False)
 def get_enrolled_students_for_subject(subject_id):
     try:
         response = supabase.table('subject_students').select('*, students(*)').eq('subject_id', subject_id).execute()
@@ -112,8 +121,7 @@ def get_enrolled_students_for_subject(subject_id):
     except Exception as e:
         return []
 
-
-
+@st.cache_data(ttl=15, show_spinner=False)
 def get_student_attendance(student_id):
     response = supabase.table('attendance_logs').select('*, subjects(*)').eq('student_id', student_id).execute()
     return response.data
@@ -121,8 +129,10 @@ def get_student_attendance(student_id):
 
 def create_attendance(logs):
     response = supabase.table('attendance_logs').insert(logs).execute()
+    clear_db_cache()
     return response.data
 
+@st.cache_data(ttl=15, show_spinner=False)
 def get_attendance_for_teacher(teacher_id=None):
     try:
         if teacher_id:
@@ -143,6 +153,7 @@ def get_attendance_for_teacher(teacher_id=None):
 
 def delete_attendance_session(timestamp_str, subject_id):
     response = supabase.table('attendance_logs').delete().eq('timestamp', timestamp_str).eq('subject_id', subject_id).execute()
+    clear_db_cache()
     return response.data
 
 
@@ -152,15 +163,18 @@ def delete_all_attendance_for_teacher(teacher_id):
         if teacher_subjects.data:
             sids = [s['subject_id'] for s in teacher_subjects.data]
             response = supabase.table('attendance_logs').delete().in_('subject_id', sids).execute()
+            clear_db_cache()
             return response.data
     except Exception:
         pass
+    clear_db_cache()
     return []
 
 
 def delete_subject(subject_id):
     try:
         response = supabase.table('subjects').delete().eq('subject_id', subject_id).execute()
+        clear_db_cache()
         return response.data
     except Exception as e:
         return None
@@ -169,11 +183,12 @@ def delete_subject(subject_id):
 def claim_subject(subject_code, new_teacher_id):
     try:
         response = supabase.table('subjects').update({'teacher_id': new_teacher_id}).eq('subject_code', subject_code.strip()).execute()
+        clear_db_cache()
         return response.data
     except Exception as e:
         return None
 
-
+@st.cache_data(ttl=15, show_spinner=False)
 def get_all_existing_subjects():
     try:
         response = supabase.table('subjects').select('*, teachers(name, username), subject_students(count)').execute()
@@ -184,6 +199,7 @@ def get_all_existing_subjects():
         return subjects
     except Exception as e:
         return []
+
 
 
 

@@ -3,7 +3,8 @@ from PIL import Image
 
 @st.dialog("Classroom Photos")
 def add_photos_dialog():
-    st.markdown("<p style='color: #475569; font-size: 0.9rem; margin-bottom: 1rem;'>Capture or upload classroom photos for facial attendance recognition.</p>", unsafe_allow_html=True)
+    current_count = len(st.session_state.attendance_images) if 'attendance_images' in st.session_state else 0
+    st.markdown(f"<p style='color: #667085; font-size: 0.88rem; margin-bottom: 0.75rem;'>Capture or upload classroom photos for facial attendance recognition. Current batch: <strong>{current_count} photos</strong>.</p>", unsafe_allow_html=True)
 
     if 'photo_tab' not in st.session_state:
         st.session_state.photo_tab = 'camera'
@@ -12,13 +13,13 @@ def add_photos_dialog():
 
     with t1:
         type_camera = "primary" if st.session_state.photo_tab == 'camera' else 'secondary'
-        if st.button('Take Snapshot', type=type_camera, use_container_width=True):
+        if st.button('📷 Camera Snapshot', type=type_camera, use_container_width=True):
             st.session_state.photo_tab = 'camera'
             st.rerun()
 
     with t2:
         type_upload = "primary" if st.session_state.photo_tab == 'upload' else 'secondary'
-        if st.button('Upload Images', type=type_upload, use_container_width=True):
+        if st.button('📁 Upload Images', type=type_upload, use_container_width=True):
             st.session_state.photo_tab = 'upload'
             st.rerun()
 
@@ -32,14 +33,14 @@ def add_photos_dialog():
             st.rerun()
 
     if st.session_state.photo_tab == 'upload':
-        uploaded_files = st.file_uploader('Select image files', type=['jpg', 'png', 'jpeg'], accept_multiple_files=True, key='dialog_upload')
+        uploaded_files = st.file_uploader('Select classroom image files', type=['jpg', 'png', 'jpeg'], accept_multiple_files=True, key='dialog_upload')
 
         if uploaded_files:
             for f in uploaded_files:
                 st.session_state.attendance_images.append(Image.open(f))
-            st.toast('Photos added successfully!')
+            st.toast(f'{len(uploaded_files)} photos added successfully!')
             st.rerun()
 
     st.divider()
-    if st.button('Done', type='primary', use_container_width=True):
+    if st.button('Done & Return to Console', type='primary', use_container_width=True):
         st.rerun()

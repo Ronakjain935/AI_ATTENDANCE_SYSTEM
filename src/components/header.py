@@ -1,97 +1,87 @@
 import streamlit as st
-import textwrap
-from src.utils.assets import get_asset_base64
-from src.ui.base_layout import get_current_theme
+import os
+from src.utils.assets import get_asset_path, get_asset_base64
 
 def header_home():
-    theme = get_current_theme()
-    is_dark = (theme == "dark")
-
+    """
+    Renders the classic academic header for the home screen centered:
+    SNAPCLASS branding, subtitle, AI ONLINE indicator, and hero section.
+    """
     logo_b64 = get_asset_base64("logo.png")
-    logo_url = logo_b64 if logo_b64 else "https://i.ibb.co/YTYGn5qV/logo.png"
+    logo_src = logo_b64 if logo_b64 else "https://i.ibb.co/YTYGn5qV/logo.png"
 
-    badge_bg = "#1E293B" if is_dark else "#FFFFFF"
-    badge_border = "#334155" if is_dark else "#CBD5E1"
-    badge_text = "#38BDF8" if is_dark else "#1E3A8A"
-    sub_text = "#94A3B8" if is_dark else "#475569"
-    pill_bg = "#1E293B" if is_dark else "#FFFFFF"
-    pill_border = "#334155" if is_dark else "#CBD5E1"
-    pill_text = "#F8FAFC" if is_dark else "#0F172A"
-    title_color = "#FFFFFF" if is_dark else "#0F172A"
-    accent_color = "#38BDF8" if is_dark else "#2563EB"
-
-    html = textwrap.dedent(f"""\
-<div style="display: flex; flex-direction: column; align-items: center; justify-content: center; margin-top: 0.5rem; margin-bottom: 2rem; text-align: center;">
-<div style="display: inline-flex; align-items: center; gap: 8px; background: {badge_bg}; border: 1.5px solid {badge_border}; padding: 6px 18px; border-radius: 999px; margin-bottom: 1.25rem; box-shadow: 0 1px 3px rgba(0,0,0,0.08);">
-<span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #10B981;"></span>
-<span style="font-size: 0.78rem; font-weight: 800; color: {badge_text}; text-transform: uppercase; letter-spacing: 0.08em;">SnapClass Platform</span>
-<span style="color: {badge_border}; font-weight: 300;">|</span>
-<span style="font-size: 0.82rem; font-weight: 600; color: {sub_text};">Biometric & Acoustic Roll-Call</span>
+    header_html = f"""<div style="text-align: center; margin-bottom: 2rem;">
+<div style="display: inline-flex; align-items: center; justify-content: center; gap: 14px; margin-bottom: 1.5rem; flex-wrap: wrap;">
+    <img src="{logo_src}" width="42" height="42" style="border-radius: 8px; vertical-align: middle; object-fit: contain;" />
+    <div style="text-align: left; line-height: 1.15;">
+        <span style="font-size: 1.45rem; font-weight: 800; color: #172B4D; letter-spacing: -0.02em;">SNAPCLASS</span>
+        <span style="display: block; font-size: 0.68rem; font-weight: 700; color: #40566F; letter-spacing: 0.08em; text-transform: uppercase;">SMART CLASSROOM. SMART ATTENDANCE.</span>
+    </div>
+    <div style="display: inline-flex; align-items: center; background: #E8F5E9; border: 1px solid #C8E6C9; padding: 4px 12px; border-radius: 9999px; margin-left: 8px; font-size: 0.74rem; font-weight: 700; color: #218739; letter-spacing: 0.04em;">
+        <span style="display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #218739; margin-right: 6px;"></span>
+        AI ONLINE
+    </div>
 </div>
 
-<div style="background: {badge_bg}; padding: 12px 20px; border-radius: 14px; border: 1.5px solid {badge_border}; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 1.25rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
-<img src="{logo_url}" style="height: 56px; width: auto;" alt="SnapClass Logo" />
+<!-- Centered Welcome Section -->
+<div style="border-bottom: 1px solid #D9DEE7; padding-bottom: 1.75rem;">
+    <div style="display: inline-block; font-size: 0.76rem; font-weight: 700; color: #2F6FED; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.5rem; background: #EFF6FF; border: 1px solid #DBEAFE; padding: 4px 14px; border-radius: 9999px;">
+        INSTITUTIONAL ATTENDANCE PLATFORM
+    </div>
+    <h1 style="font-size: 2.75rem; font-weight: 800; color: #172B4D; line-height: 1.15; margin: 0.35rem 0 0.65rem 0; text-align: center;">
+        Smart Classroom
+    </h1>
+    <p style="color: #667085; font-size: 1.06rem; margin: 0 auto 1.35rem auto; max-width: 620px; line-height: 1.55; font-weight: 400; text-align: center;">
+        AI-powered attendance management for modern classrooms. Rapid biometric verification via high-accuracy facial vectors and acoustic voice models.
+    </p>
+    <div style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; align-items: center;">
+        <span style="background: #FFFFFF; border: 1px solid #D9DEE7; color: #172B4D; font-size: 0.82rem; font-weight: 600; padding: 5px 14px; border-radius: 6px; box-shadow: 0 1px 2px rgba(0,0,0,0.02);">● Instant Roll-Call</span>
+        <span style="background: #FFFFFF; border: 1px solid #D9DEE7; color: #172B4D; font-size: 0.82rem; font-weight: 600; padding: 5px 14px; border-radius: 6px; box-shadow: 0 1px 2px rgba(0,0,0,0.02);">● Multi-Face Biometrics</span>
+        <span style="background: #FFFFFF; border: 1px solid #D9DEE7; color: #172B4D; font-size: 0.82rem; font-weight: 600; padding: 5px 14px; border-radius: 6px; box-shadow: 0 1px 2px rgba(0,0,0,0.02);">● Voice Recognition</span>
+        <span style="background: #FFFFFF; border: 1px solid #D9DEE7; color: #172B4D; font-size: 0.82rem; font-weight: 600; padding: 5px 14px; border-radius: 6px; box-shadow: 0 1px 2px rgba(0,0,0,0.02);">● QR & PIN Join</span>
+    </div>
 </div>
+</div>"""
+    st.markdown(header_html, unsafe_allow_html=True)
 
-<h1 style="font-size: 2.75rem; font-weight: 800; color: {title_color}; line-height: 1.15; letter-spacing: -0.02em; margin: 0 0 0.85rem 0;">
-Smart Attendance.<br>
-<span style="color: {accent_color};">Zero Roll-Call Friction.</span>
-</h1>
 
-<p style="color: {sub_text}; font-size: 1.05rem; font-weight: 500; margin: 0 0 1.5rem 0; max-width: 600px; line-height: 1.55;">
-Automate classroom attendance with deep facial embeddings and acoustic voice models in seconds.
-</p>
+def header_dashboard(page_title="Dashboard", user_name=None, role=None):
+    """
+    Renders the fixed classic academic header for dashboard screens:
+    Left: SNAPCLASS logo
+    Center/Left: Current page title
+    Right: User profile + AI ONLINE status indicator
+    """
+    logo_path = get_asset_path("logo.png")
+    
+    col_brand, col_title, col_user = st.columns([1, 1.2, 1.3], vertical_alignment="center")
+    
+    with col_brand:
+        b_icon, b_text = st.columns([0.3, 2], vertical_alignment="center")
+        with b_icon:
+            if os.path.exists(logo_path):
+                st.image(logo_path, width=32)
+            else:
+                st.image("https://i.ibb.co/YTYGn5qV/logo.png", width=32)
+        with b_text:
+            brand_html = """<div style="line-height: 1.1;">
+<span style="font-size: 1.15rem; font-weight: 800; color: #172B4D;">SNAPCLASS</span>
+</div>"""
+            st.markdown(brand_html, unsafe_allow_html=True)
 
-<div style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;">
-<span style="background: {pill_bg}; color: {pill_text}; border: 1.5px solid {pill_border}; padding: 6px 14px; border-radius: 8px; font-size: 0.84rem; font-weight: 700;">
-⚡ Instant Sub-Second Scan
-</span>
-<span style="background: {pill_bg}; color: {pill_text}; border: 1.5px solid {pill_border}; padding: 6px 14px; border-radius: 8px; font-size: 0.84rem; font-weight: 700;">
-🎯 99.4% Multi-Face Biometrics
-</span>
-<span style="background: {pill_bg}; color: {pill_text}; border: 1.5px solid {pill_border}; padding: 6px 14px; border-radius: 8px; font-size: 0.84rem; font-weight: 700;">
-🎙️ Acoustic Voice Speaker AI
-</span>
-<span style="background: {pill_bg}; color: {pill_text}; border: 1.5px solid {pill_border}; padding: 6px 14px; border-radius: 8px; font-size: 0.84rem; font-weight: 700;">
-📱 Official QR / PIN Check-In
-</span>
+    with col_title:
+        title_html = f"""<div style="font-size: 0.95rem; font-weight: 700; color: #40566F; border-left: 1.5px solid #D9DEE7; padding-left: 12px;">
+{page_title}
+</div>"""
+        st.markdown(title_html, unsafe_allow_html=True)
+
+    with col_user:
+        user_disp = user_name if user_name else "Account"
+        role_tag = role.upper() if role else "USER"
+        user_html = f"""<div style="display: flex; align-items: center; justify-content: flex-end; gap: 10px;">
+<div style="text-align: right; line-height: 1.2;">
+<span style="font-size: 0.86rem; font-weight: 700; color: #172B4D;">{user_disp}</span>
+<span style="display: block; font-size: 0.68rem; font-weight: 700; color: #667085;">{role_tag} &bull; <span style="color: #218739;">● AI ONLINE</span></span>
 </div>
-</div>\
-""")
-    st.markdown(html, unsafe_allow_html=True)
-
-
-def header_dashboard():
-    theme = get_current_theme()
-    is_dark = (theme == "dark")
-
-    logo_b64 = get_asset_base64("logo.png")
-    logo_url = logo_b64 if logo_b64 else "https://i.ibb.co/YTYGn5qV/logo.png"
-
-    card_bg = "#1E293B" if is_dark else "#FFFFFF"
-    card_border = "#334155" if is_dark else "#CBD5E1"
-    title_color = "#FFFFFF" if is_dark else "#0F172A"
-    accent_color = "#38BDF8" if is_dark else "#2563EB"
-    sub_color = "#94A3B8" if is_dark else "#475569"
-
-    html = textwrap.dedent(f"""\
-<div style="display: flex; align-items: center; gap: 12px; margin-bottom: 0.3rem;">
-<div style="background: {card_bg}; padding: 6px 10px; border-radius: 10px; border: 1.5px solid {card_border}; display: flex; align-items: center;">
-<img src="{logo_url}" style="height: 38px; width: auto;" alt="SnapClass Logo" />
-</div>
-<div>
-<div style="display: flex; align-items: center; gap: 8px;">
-<h2 style="font-size: 1.48rem; font-weight: 800; line-height: 1.1; margin: 0; color: {title_color}; letter-spacing: -0.01em;">
-Snap<span style="color: {accent_color};">Class</span>
-</h2>
-<span style="font-size: 0.68rem; background: {'#2563EB' if is_dark else '#0F172A'}; color: #FFFFFF; padding: 2px 7px; border-radius: 4px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase;">
-EDITION
-</span>
-</div>
-<span style="font-size: 0.74rem; font-weight: 700; color: {sub_color}; letter-spacing: 0.04em; text-transform: uppercase;">
-Institutional Attendance System
-</span>
-</div>
-</div>\
-""")
-    st.markdown(html, unsafe_allow_html=True)
+</div>"""
+        st.markdown(user_html, unsafe_allow_html=True)

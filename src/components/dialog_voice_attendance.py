@@ -1,5 +1,4 @@
 import streamlit as st
-from src.pipelines.voice_pipeline import process_bulk_audio
 from src.database.config import supabase
 import pandas as pd
 from src.components.dialog_attendance_results import show_attendance_result
@@ -7,16 +6,21 @@ from datetime import datetime
 
 @st.dialog('Voice Attendance Verification')
 def voice_attendance_dialog(selected_subject_id):
-    st.markdown("<p style='color: #475569; font-size: 0.9rem; margin-bottom: 1rem;'>Record classroom roll-call audio. The AI speaker engine will identify enrolled students by voice.</p>", unsafe_allow_html=True)
+    st.markdown("""<div style="margin-bottom: 0.75rem;">
+<div style="display: inline-block; background: #EEF4FF; color: #2F6FED; border: 1px solid #CFE0FC; padding: 2px 8px; border-radius: 4px; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; margin-bottom: 4px;">
+Acoustic Speaker AI
+</div>
+<p style="color: #667085; font-size: 0.88rem; margin: 0;">Record classroom roll-call audio. The speaker recognition engine identifies enrolled students by vocal embeddings.</p>
+</div>""", unsafe_allow_html=True)
 
-    audio_data = st.audio_input("Record classroom audio")
+    audio_data = st.audio_input("Record classroom roll-call audio")
 
-    if st.button('Analyze Voice Audio', use_container_width=True, type='primary'):
+    if st.button('🎙️ Analyze Voice Audio', use_container_width=True, type='primary'):
         if not audio_data:
             st.warning("Please record audio before analyzing.")
             return
 
-        with st.spinner('Analyzing speaker voice profiles...'):
+        with st.spinner('Processing vocal embeddings...'):
             enrolled_res = supabase.table('subject_students').select("*, students(*)").eq('subject_id', selected_subject_id).execute()
             enrolled_students = enrolled_res.data
 
@@ -33,6 +37,7 @@ def voice_attendance_dialog(selected_subject_id):
                 return
             
             audio_bytes = audio_data.read()
+            from src.pipelines.voice_pipeline import process_bulk_audio
             detected_scores = process_bulk_audio(audio_bytes, candidates_dict)
 
             results, attendance_to_log = [], []

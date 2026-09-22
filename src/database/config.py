@@ -1,6 +1,7 @@
 import streamlit as st
 from supabase import create_client, Client
 
+@st.cache_resource
 def _init_supabase() -> Client:
     try:
         url = st.secrets["SUPABASE_URL"]

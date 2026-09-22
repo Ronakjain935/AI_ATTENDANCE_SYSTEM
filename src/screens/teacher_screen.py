@@ -3,11 +3,9 @@ import numpy as np
 import pandas as pd
 from datetime import datetime
 import time
-import textwrap
 
-from src.ui.base_layout import style_background_dashboard, style_base_layout, render_theme_toggle, get_current_theme
+from src.ui.base_layout import style_page_background, style_base_layout
 from src.components.header import header_dashboard
-from src.components.footer import footer_dashboard
 from src.components.subject_card import subject_card
 from src.database.db import (
     check_teacher_exists, create_teacher, teacher_login, 
@@ -19,13 +17,12 @@ from src.database.db import (
 from src.components.dialog_create_subject import create_subject_dialog
 from src.components.dialog_share_subject import share_subject_dialog
 from src.components.dialog_add_photo import add_photos_dialog
-from src.pipelines.face_pipeline import predict_attendance
 from src.components.dialog_attendance_results import attendance_result_dialog
 from src.components.dialog_voice_attendance import voice_attendance_dialog
 from src.database.config import supabase
 
 def teacher_screen():
-    style_background_dashboard()
+    style_page_background()
     style_base_layout()
 
     if "teacher_data" in st.session_state:
@@ -37,47 +34,23 @@ def teacher_screen():
 
 
 def teacher_dashboard():
-    theme = get_current_theme()
-    is_dark = (theme == "dark")
-
-    card_bg = "#1E293B" if is_dark else "#FFFFFF"
-    card_border = "#334155" if is_dark else "#CBD5E1"
-    text_color = "#FFFFFF" if is_dark else "#0F172A"
-    sub_color = "#94A3B8" if is_dark else "#475569"
-
     teacher_data = st.session_state.teacher_data
     teacher_id = teacher_data['teacher_id']
     teacher_name = teacher_data.get('name', 'Instructor')
-    initials = "".join([part[0] for part in teacher_name.split()][:2]).upper() if teacher_name else "IN"
+    today_str = datetime.now().strftime("%A, %b %d, %Y")
 
-    # Top App Shell Header with Theme Toggle
-    top_col1, top_col2 = st.columns([1.1, 1.2], vertical_alignment='center')
-    with top_col1:
-        header_dashboard()
-    with top_col2:
-        u_col0, u_col1, u_col2 = st.columns([1.1, 1.7, 0.9], vertical_alignment='center')
-        with u_col0:
-            render_theme_toggle("teacher_top_theme_toggle")
-        with u_col1:
-            st.markdown(textwrap.dedent(f"""\
-<div style="display: flex; align-items: center; justify-content: flex-end; gap: 8px;">
-<div style="text-align: right;">
-<div style="font-size: 0.92rem; font-weight: 800; color: {text_color}; white-space: nowrap;">{teacher_name}</div>
-<span style="font-size: 0.70rem; background: {'#2563EB' if is_dark else '#0F172A'}; color: #FFFFFF; padding: 2px 6px; border-radius: 4px; font-weight: 800; letter-spacing: 0.04em;">FACULTY</span>
-</div>
-<div style="width: 38px; height: 38px; border-radius: 6px; background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%); color: #FFFFFF; font-weight: 800; font-size: 0.88rem; display: flex; align-items: center; justify-content: center;">
-{initials}
-</div>
-</div>\
-"""), unsafe_allow_html=True)
-        with u_col2:
-            if st.button("Log Out", type='secondary', key='teacher_logout_btn', use_container_width=True):
-                st.session_state['is_logged_in'] = False
-                if 'teacher_data' in st.session_state:
-                    del st.session_state.teacher_data
-                st.rerun()
+    # Header Control Bar
+    top_c1, top_c2 = st.columns([3, 1], vertical_alignment='center')
+    with top_c1:
+        header_dashboard(page_title="Classroom Control", user_name=teacher_name, role="Faculty")
+    with top_c2:
+        if st.button("Log Out", type='secondary', key='teacher_logout_btn', use_container_width=True):
+            st.session_state['is_logged_in'] = False
+            if 'teacher_data' in st.session_state:
+                del st.session_state.teacher_data
+            st.rerun()
 
-    # Pre-fetch stats for top KPI row
+    # Pre-fetch stats
     subjects = get_teacher_subjects(teacher_id) or []
     records = get_attendance_for_teacher(teacher_id) or []
     total_students_enrolled = sum(s.get('total_students', 0) for s in subjects)
@@ -85,47 +58,58 @@ def teacher_dashboard():
     sessions_keys = set((r.get('timestamp'), r.get('subject_id')) for r in records if r.get('timestamp'))
     total_sessions_count = len(sessions_keys)
 
-    # High-Contrast KPI Metric Bar
-    kpi1, kpi2, kpi3 = st.columns(3)
-    with kpi1:
-        st.markdown(textwrap.dedent(f"""\
-<div style="background: {card_bg}; border: 1.5px solid {card_border}; border-top: 4px solid #2563EB; border-radius: 8px; padding: 14px 18px; box-shadow: 0 1px 3px rgba(0,0,0,0.06);">
-<div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
-<span style="color: {sub_color}; font-size: 0.78rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">Active Courses</span>
-<span style="font-size: 1.2rem;">📚</span>
-</div>
-<div style="font-size: 1.85rem; font-weight: 800; color: {text_color};">{len(subjects)}</div>
-</div>\
-"""), unsafe_allow_html=True)
+    total_presents = sum(1 for r in records if r.get('is_present'))
+    total_logs = len(records)
+    total_absents = total_logs - total_presents
+    avg_rate = int(total_presents / total_logs * 100) if total_logs > 0 else 100
+    rate_color = "#218739" if avg_rate >= 75 else ("#B7791F" if avg_rate >= 60 else "#C53030")
 
-    with kpi2:
-        st.markdown(textwrap.dedent(f"""\
-<div style="background: {card_bg}; border: 1.5px solid {card_border}; border-top: 4px solid #16A34A; border-radius: 8px; padding: 14px 18px; box-shadow: 0 1px 3px rgba(0,0,0,0.06);">
-<div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
-<span style="color: {sub_color}; font-size: 0.78rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">Total Enrolled</span>
-<span style="font-size: 1.2rem;">👥</span>
+    # CLASSROOM CONTROL PANEL (Classic Academic Style)
+    ctrl_panel_html = f"""<div style="background: #FFFFFF; border: 1px solid #D9DEE7; border-radius: 12px; padding: 1.5rem; margin-top: 1.25rem; margin-bottom: 1.5rem; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);">
+<div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; border-bottom: 1px solid #D9DEE7; padding-bottom: 12px; margin-bottom: 14px;">
+<div>
+<div style="font-size: 0.72rem; font-weight: 700; color: #2F6FED; text-transform: uppercase; letter-spacing: 0.06em;">
+CLASSROOM CONTROL &bull; INSTRUCTOR CONSOLE
 </div>
-<div style="font-size: 1.85rem; font-weight: 800; color: {text_color};">{total_students_enrolled}</div>
-</div>\
-"""), unsafe_allow_html=True)
-
-    with kpi3:
-        st.markdown(textwrap.dedent(f"""\
-<div style="background: {card_bg}; border: 1.5px solid {card_border}; border-top: 4px solid #D97706; border-radius: 8px; padding: 14px 18px; box-shadow: 0 1px 3px rgba(0,0,0,0.06);">
-<div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
-<span style="color: {sub_color}; font-size: 0.78rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">Sessions Logged</span>
-<span style="font-size: 1.2rem;">📋</span>
+<h2 style="font-size: 1.45rem; font-weight: 800; color: #172B4D; margin: 2px 0 2px 0;">Prof. {teacher_name}</h2>
+<span style="font-size: 0.80rem; font-weight: 600; color: #667085;">{today_str} &bull; {len(subjects)} Active Subjects</span>
 </div>
-<div style="font-size: 1.85rem; font-weight: 800; color: {text_color};">{total_sessions_count}</div>
-</div>\
-"""), unsafe_allow_html=True)
 
-    st.write("")
+<div style="text-align: right;">
+<div style="font-size: 2.3rem; font-weight: 800; color: {rate_color}; font-family: 'Plus Jakarta Sans', sans-serif; line-height: 1;">
+{avg_rate}%
+</div>
+<span style="font-size: 0.74rem; font-weight: 700; color: #667085; text-transform: uppercase; letter-spacing: 0.04em;">
+TODAY'S ATTENDANCE
+</span>
+</div>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; text-align: center;">
+<div>
+<span style="font-size: 0.72rem; font-weight: 600; color: #667085; display: block; text-transform: uppercase;">Students Present</span>
+<strong style="font-size: 1.25rem; color: #218739; font-family: 'Plus Jakarta Sans', sans-serif;">{total_presents}</strong>
+</div>
+<div>
+<span style="font-size: 0.72rem; font-weight: 600; color: #667085; display: block; text-transform: uppercase;">Students Absent</span>
+<strong style="font-size: 1.25rem; color: #C53030; font-family: 'Plus Jakarta Sans', sans-serif;">{total_absents}</strong>
+</div>
+<div>
+<span style="font-size: 0.72rem; font-weight: 600; color: #667085; display: block; text-transform: uppercase;">Total Students</span>
+<strong style="font-size: 1.25rem; color: #172B4D; font-family: 'Plus Jakarta Sans', sans-serif;">{total_students_enrolled}</strong>
+</div>
+<div>
+<span style="font-size: 0.72rem; font-weight: 600; color: #667085; display: block; text-transform: uppercase;">Total Subjects</span>
+<strong style="font-size: 1.25rem; color: #2F6FED; font-family: 'Plus Jakarta Sans', sans-serif;">{len(subjects)}</strong>
+</div>
+</div>
+</div>"""
+    st.markdown(ctrl_panel_html, unsafe_allow_html=True)
 
     if "current_teacher_tab" not in st.session_state:
         st.session_state.current_teacher_tab = 'take_attendance'
 
-    # Segmented Tab Navigation Bar
+    # Fixed Navigation Tabs
     tab1, tab2, tab3 = st.columns(3)
 
     with tab1:
@@ -136,7 +120,7 @@ def teacher_dashboard():
 
     with tab2:
         type2 = "primary" if st.session_state.current_teacher_tab == 'manage_subjects' else "secondary"
-        if st.button('📚 Manage Courses', type=type2, use_container_width=True):
+        if st.button('📚 Manage Subjects', type=type2, use_container_width=True):
             st.session_state.current_teacher_tab = 'manage_subjects'
             st.rerun()
 
@@ -155,62 +139,101 @@ def teacher_dashboard():
     elif st.session_state.current_teacher_tab == "attendance_records":
         teacher_tab_attendance_records(records)
 
-    footer_dashboard()
-
 
 def teacher_tab_take_attendance(subjects):
-    st.markdown(textwrap.dedent("""\
-<div>
-<h2 style="font-size: 1.45rem; font-weight: 800; color: #0F172A; margin: 0 0 4px 0;">Take Attendance</h2>
-<p style="color: #64748B; font-size: 0.9rem; margin: 0 0 1.25rem 0;">Select a course and upload classroom photos or record roll-call audio.</p>
-</div>\
-"""), unsafe_allow_html=True)
+    st.markdown("""<div style="margin-bottom: 12px;">
+<div style="font-size: 0.72rem; font-weight: 700; color: #2F6FED; text-transform: uppercase; letter-spacing: 0.06em;">
+AI RECOGNITION CONSOLE
+</div>
+<h3 style="font-size: 1.35rem; font-weight: 800; color: #172B4D; margin: 2px 0 0 0;">Classroom Roll-Call Console</h3>
+<p style="color: #667085; font-size: 0.88rem; margin: 0;">Scan classroom photos or record acoustic voice roll-call.</p>
+</div>""", unsafe_allow_html=True)
 
     if 'attendance_images' not in st.session_state:
         st.session_state.attendance_images = []
 
     if not subjects:
-        st.info('You have not created any courses yet. Go to "Manage Courses" to set up your first class.')
+        st.info('No registered courses found. Create your first subject in "Manage Subjects" tab.')
         return
     
-    subject_options = {f"{s['name']} ({s['subject_code']})": s['subject_id'] for s in subjects}
+    subject_options = {f"{s['name']} ({s['subject_code']}) &bull; {s.get('total_students', 0)} Enrolled": s['subject_id'] for s in subjects}
 
-    col1, col2 = st.columns([3, 1], vertical_alignment='bottom')
+    col1, col2 = st.columns([3, 1.2], vertical_alignment='bottom')
 
     with col1:
-        selected_subject_label = st.selectbox('Select Course', options=list(subject_options.keys()))
+        selected_subject_label = st.selectbox('Select Active Classroom', options=list(subject_options.keys()))
 
     with col2:
-        if st.button('Add Photos', type='primary', use_container_width=True):
+        if st.button('➕ Add Classroom Photo', type='primary', use_container_width=True):
             add_photos_dialog()
 
     selected_subject_id = subject_options[selected_subject_label]
 
     st.write("")
 
-    if st.session_state.attendance_images:
-        st.markdown(textwrap.dedent(f"""\
-<div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-<span style="font-size: 0.95rem; font-weight: 700; color: #0F172A;">Classroom Photos ({len(st.session_state.attendance_images)})</span>
-</div>\
-"""), unsafe_allow_html=True)
-        gallery_cols = st.columns(4)
+    # AI RECOGNITION CONSOLE: Left Camera area, Right Status panel
+    c_left, c_right = st.columns([1.5, 1], gap="medium")
 
-        for idx, img in enumerate(st.session_state.attendance_images):
-            with gallery_cols[idx % 4]:
-                st.image(img, use_container_width=True, caption=f'Photo {idx+1}')
+    with c_left:
+        st.markdown(f"""<div style="font-size: 0.82rem; font-weight: 700; color: #172B4D; margin-bottom: 6px;">
+CLASSROOM CAMERA AREA [{len(st.session_state.attendance_images)} PHOTOS LOADED]
+</div>""", unsafe_allow_html=True)
 
-    has_photos = bool(st.session_state.attendance_images)
-    c1, c2, c3 = st.columns(3)
+        if st.session_state.attendance_images:
+            gallery_cols = st.columns(min(len(st.session_state.attendance_images), 3))
+            for idx, img in enumerate(st.session_state.attendance_images[:3]):
+                with gallery_cols[idx]:
+                    st.image(img, use_container_width=True, caption=f"Photo #{idx+1}")
+            if len(st.session_state.attendance_images) > 3:
+                st.caption(f"+ {len(st.session_state.attendance_images) - 3} additional photos queued")
+        else:
+            empty_viewfinder = """<div style="background: #FFFFFF; border: 1.5px dashed #D9DEE7; border-radius: 8px; padding: 2.5rem 1rem; text-align: center;">
+<div style="font-size: 0.82rem; font-weight: 700; color: #40566F; margin-bottom: 4px;">CAMERA AREA STANDBY</div>
+<p style="font-size: 0.86rem; color: #667085; margin: 0;">Click 'Add Classroom Photo' above to load student group snapshots.</p>
+</div>"""
+            st.markdown(empty_viewfinder, unsafe_allow_html=True)
 
-    with c1:
+    with c_right:
+        has_photos = bool(st.session_state.attendance_images)
+        scan_state = "READY TO SCAN" if has_photos else "READY"
+        state_color = "#218739" if has_photos else "#40566F"
+
+        ai_console_html = f"""<div style="background: #FFFFFF; border: 1px solid #D9DEE7; border-radius: 8px; padding: 1.1rem; font-size: 0.82rem; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);">
+<div style="color: #2F6FED; font-weight: 700; border-bottom: 1px solid #D9DEE7; padding-bottom: 6px; margin-bottom: 8px; text-transform: uppercase;">
+AI RECOGNITION CONSOLE
+</div>
+<div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+<span style="color: #667085;">STATUS:</span>
+<strong style="color: {state_color};">● {scan_state}</strong>
+</div>
+<div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+<span style="color: #667085;">QUEUE:</span>
+<strong style="color: #172B4D;">{len(st.session_state.attendance_images)} PHOTOS</strong>
+</div>
+<div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+<span style="color: #667085;">ENGINE:</span>
+<strong style="color: #172B4D;">Face Vectors 512-D</strong>
+</div>
+<div style="display: flex; justify-content: space-between; border-top: 1px solid #F0EFEA; padding-top: 6px;">
+<span style="color: #667085;">VOICE CORE:</span>
+<strong style="color: #218739;">READY</strong>
+</div>
+</div>"""
+        st.markdown(ai_console_html, unsafe_allow_html=True)
+
+    st.write("")
+
+    # Action buttons
+    b1, b2, b3 = st.columns(3)
+    with b1:
         if st.button('Clear Photos', use_container_width=True, type='secondary', disabled=not has_photos):
             st.session_state.attendance_images = []
             st.rerun()
 
-    with c2:
-        if st.button('🔍 Run Face Recognition', use_container_width=True, type='primary', disabled=not has_photos):
+    with b2:
+        if st.button('🔍 Run Face Biometrics', use_container_width=True, type='primary', disabled=not has_photos):
             with st.spinner('Scanning classroom photos...'):
+                from src.pipelines.face_pipeline import predict_attendance
                 all_detected_ids = {}
                 total_faces_scanned = 0
 
@@ -256,32 +279,30 @@ def teacher_tab_take_attendance(subjects):
 
                     attendance_result_dialog(pd.DataFrame(results), attendance_to_log)
 
-    with c3:
+    with b3:
         if st.button('🎙️ Voice Attendance', type='secondary', use_container_width=True):
             voice_attendance_dialog(selected_subject_id)
 
 
 def teacher_tab_manage_subjects(subjects):
     teacher_id = st.session_state.teacher_data['teacher_id']
-    col1, col2 = st.columns([3, 1], vertical_alignment='center')
+    col1, col2 = st.columns([3, 1.2], vertical_alignment='center')
     with col1:
-        st.markdown(textwrap.dedent("""\
-<div>
-<h2 style="font-size: 1.45rem; font-weight: 800; color: #0F172A; margin: 0 0 4px 0;">Manage Courses</h2>
-<p style="color: #64748B; font-size: 0.9rem; margin: 0;">Create and organize your active classes and student rosters.</p>
-</div>\
-"""), unsafe_allow_html=True)
+        st.markdown("""<div>
+<h3 style="font-size: 1.35rem; font-weight: 800; color: #172B4D; margin: 0 0 2px 0;">Active Subject Tiles</h3>
+<p style="color: #667085; font-size: 0.88rem; margin: 0;">Create and organize your active classes and student rosters.</p>
+</div>""", unsafe_allow_html=True)
 
     with col2:
-        if st.button('➕ Create Course', use_container_width=True, type='primary'):
+        if st.button('➕ Create Subject', use_container_width=True, type='primary'):
             create_subject_dialog(teacher_id)
 
     st.write("")
     if subjects:
-        for sub in subjects:
+        for idx, sub in enumerate(subjects):
             stats = [
-                ("👥", "Students", sub['total_students']),
-                ("📋", "Sessions", sub['total_classes']),
+                ("Students", f"{sub['total_students']} enrolled"),
+                ("Sessions", f"{sub['total_classes']} logged"),
             ]
             def action_buttons():
                 bcol1, bcol2 = st.columns(2)
@@ -289,7 +310,7 @@ def teacher_tab_manage_subjects(subjects):
                     if st.button(f"🔗 Share Code: {sub['subject_code']}", key=f"share_{sub['subject_code']}", type='secondary', use_container_width=True):
                         share_subject_dialog(sub['name'], sub['subject_code'])
                 with bcol2:
-                    if st.button("🗑️ Delete Course", key=f"del_{sub['subject_id']}", type='tertiary', use_container_width=True):
+                    if st.button("🗑️ Delete Subject", key=f"del_{sub['subject_id']}", type='tertiary', use_container_width=True):
                         delete_subject(sub['subject_id'])
                         st.toast(f"Deleted {sub['name']} successfully!")
                         time.sleep(0.5)
@@ -301,14 +322,15 @@ def teacher_tab_manage_subjects(subjects):
                 code=sub['subject_code'],
                 section=sub['section'],
                 stats=stats,
-                footer_callback=action_buttons
+                footer_callback=action_buttons,
+                tile_index=idx + 1
             )
 
             with st.expander(f"View Enrolled Students ({sub['total_students']})", expanded=False):
                 enrolled = get_enrolled_students_for_subject(sub['subject_id'])
                 if enrolled:
                     std_list = []
-                    for idx, e in enumerate(enrolled, 1):
+                    for s_idx, e in enumerate(enrolled, 1):
                         std = e.get('students', {})
                         std_name = std.get('name', 'Unknown') if std else 'Unknown'
                         std_id = std.get('student_id', 'N/A') if std else 'N/A'
@@ -319,7 +341,7 @@ def teacher_tab_manage_subjects(subjects):
                             except Exception:
                                 pass
                         std_list.append({
-                            "#": idx,
+                            "#": s_idx,
                             "Student Name": std_name,
                             "Student ID": std_id,
                             "Enrolled On": enrolled_at or "N/A"
@@ -329,22 +351,22 @@ def teacher_tab_manage_subjects(subjects):
                     st.info(f"No students enrolled in {sub['name']} yet. Click 'Share Code' above to invite students.")
             st.write("")
     else:
-        st.info("No courses registered under your account. Click 'Create Course' above to get started.")
+        st.info("No courses registered under your account. Click 'Create Subject' above to get started.")
 
-    # Other existing subjects in system
+    # Other existing subjects in system available to claim
     all_subs = get_all_existing_subjects()
     other_subs = [s for s in all_subs if s.get('teacher_id') != teacher_id]
     if other_subs:
         st.write("")
         with st.expander(f"System Courses Available to Claim ({len(other_subs)})", expanded=False):
-            st.markdown("<p style='color: #64748B; font-size: 0.88rem;'>Courses from previous test accounts. You can transfer them to your account with one click:</p>", unsafe_allow_html=True)
+            st.markdown("<p style='color: #667085; font-size: 0.88rem;'>Courses from previous setups. You can link them to your account with one click:</p>", unsafe_allow_html=True)
             for oth in other_subs:
                 c_info, c_btn = st.columns([3, 1.2], vertical_alignment='center')
                 with c_info:
                     owner = oth.get('teachers', {}).get('name', 'Another account') if oth.get('teachers') else 'Another account'
-                    st.markdown(f"**{oth['name']}** (`{oth['subject_code']}`) — Section: {oth.get('section', 'N/A')} | Owner: *{owner}* | Enrolled: **{oth.get('total_students', 0)} students**")
+                    st.markdown(f"**{oth['name']}** (`{oth['subject_code']}`) &bull; Section: {oth.get('section', 'N/A')} &bull; Owner: *{owner}* &bull; Enrolled: **{oth.get('total_students', 0)}**")
                 with c_btn:
-                    if st.button("Claim Course", key=f"claim_other_{oth['subject_id']}", type="primary", use_container_width=True):
+                    if st.button("Claim Subject", key=f"claim_other_{oth['subject_id']}", type="primary", use_container_width=True):
                         claim_subject(oth['subject_code'], teacher_id)
                         st.toast(f"Transferred '{oth['name']}' to your account!")
                         time.sleep(0.5)
@@ -353,12 +375,10 @@ def teacher_tab_manage_subjects(subjects):
 
 
 def teacher_tab_attendance_records(records):
-    st.markdown(textwrap.dedent("""\
-<div>
-<h2 style="font-size: 1.45rem; font-weight: 800; color: #0F172A; margin: 0 0 4px 0;">Attendance History</h2>
-<p style="color: #64748B; font-size: 0.9rem; margin: 0;">Comprehensive log of past class sessions and attendance rosters.</p>
-</div>\
-"""), unsafe_allow_html=True)
+    st.markdown("""<div>
+<h3 style="font-size: 1.35rem; font-weight: 800; color: #172B4D; margin: 0 0 2px 0;">Attendance Timeline</h3>
+<p style="color: #667085; font-size: 0.88rem; margin: 0;">Chronological log of past class sessions and student presence.</p>
+</div>""", unsafe_allow_html=True)
 
     if not records:
         st.info("No attendance records found yet.")
@@ -399,7 +419,7 @@ def teacher_tab_attendance_records(records):
 
     col1, col2 = st.columns([2.5, 1.5], vertical_alignment='center')
     with col1:
-        st.markdown(f"<p style='color: #475569; font-weight: 600; margin: 0;'>Total Logged Sessions: <span style='color: #4F46E5; font-weight: 700;'>{len(sessions_map)}</span></p>", unsafe_allow_html=True)
+        st.markdown(f"<p style='color: #40566F; font-weight: 600; margin: 0;'>Total Logged Sessions: <strong style='color: #172B4D;'>{len(sessions_map)}</strong></p>", unsafe_allow_html=True)
     with col2:
         if st.button("Clear All History", type="tertiary", use_container_width=True):
             teacher_id = st.session_state.teacher_data['teacher_id']
@@ -414,28 +434,43 @@ def teacher_tab_attendance_records(records):
 
     st.write("")
 
+    # TIMELINE DISPLAY
     for (ts, sid), sess in sorted(sessions_map.items(), key=lambda x: str(x[0][0]), reverse=True):
         logs = sess['logs']
         present_count = sum(1 for l in logs if l['Status'] == "Present")
         total_count = len(logs)
+        turnout_pct = int(present_count / total_count * 100) if total_count > 0 else 0
+        pct_color = "#218739" if turnout_pct >= 75 else "#B7791F"
         
-        with st.expander(f"{sess['formatted_time']} — {sess['subject_code']} {sess['subject_name']} ({present_count}/{total_count} Present)"):
-            c_info, c_del = st.columns([2.5, 1.5], vertical_alignment='center')
-            
+        timeline_node_html = f"""<div style="background: #FFFFFF; border: 1px solid #D9DEE7; border-left: 4px solid #172B4D; border-radius: 8px; padding: 12px 16px; margin-bottom: 10px; box-shadow: 0 1px 2px rgba(0,0,0,0.02);">
+<div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+<div>
+<span style="font-size: 0.76rem; font-weight: 600; color: #667085;">{sess['formatted_time']}</span>
+<h4 style="margin: 2px 0; font-size: 1.1rem; font-weight: 700; color: #172B4D;">
+{sess['subject_name']} <span style="font-size: 0.82rem; font-weight: 600; color: #667085;">[{sess['subject_code']}]</span>
+</h4>
+</div>
+<div style="text-align: right;">
+<span style="font-size: 1.15rem; font-weight: 800; color: {pct_color}; font-family: 'Plus Jakarta Sans', sans-serif;">{present_count} / {total_count} Present</span>
+<span style="display: block; font-size: 0.74rem; font-weight: 600; color: #667085;">TURNOUT: {turnout_pct}%</span>
+</div>
+</div>
+</div>"""
+        st.markdown(timeline_node_html, unsafe_allow_html=True)
+
+        with st.expander("Session Roster Details", expanded=False):
+            c_info, c_del = st.columns([3, 1.2], vertical_alignment='center')
             with c_info:
-                st.markdown(f"**Course:** {sess['subject_name']} (`{sess['subject_code']}`)")
-                st.markdown(f"**Roster Summary:** {present_count} Present · {total_count - present_count} Absent")
-            
+                st.caption(f"Recorded timestamp: {ts}")
             with c_del:
                 clean_ts_id = str(ts).replace("-", "_").replace(":", "_").replace(".", "_")
                 delete_key = f"del_sess_{clean_ts_id}_{sid}"
                 if st.button("Delete Session", key=delete_key, type="tertiary", use_container_width=True):
                     delete_attendance_session(ts, sid)
-                    st.toast(f"Deleted attendance session for {sess['formatted_time']}")
+                    st.toast("Deleted attendance session.")
                     time.sleep(0.5)
                     st.rerun()
-            
-            st.markdown("<p style='margin-top: 10px; margin-bottom: 6px; font-weight: 600; color: #0F172A; font-size: 0.88rem;'>Roster Details:</p>", unsafe_allow_html=True)
+
             df_sess = pd.DataFrame(logs)
             st.dataframe(df_sess, use_container_width=True, hide_index=True)
 
@@ -454,35 +489,27 @@ def login_teacher(username, password):
 
 
 def teacher_screen_login():
-    theme = get_current_theme()
-    is_dark = (theme == "dark")
-    title_color = "#FFFFFF" if is_dark else "#0F172A"
-    sub_color = "#94A3B8" if is_dark else "#475569"
-
-    c1, c2, c3 = st.columns([1.5, 0.7, 0.8], vertical_alignment='center')
+    c1, c2 = st.columns([3, 1], vertical_alignment='center')
     with c1:
-        header_dashboard()
+        header_dashboard(page_title="Instructor Authentication")
     with c2:
-        render_theme_toggle('tlogin_theme_toggle')
-    with c3:
         if st.button("← Home", type='secondary', key='loginbackbtn', use_container_width=True):
             st.session_state['login_type'] = None
             st.rerun()
 
     st.write("")
     with st.container(border=True):
-        st.markdown(textwrap.dedent(f"""\
-<div style="margin-bottom: 14px;">
-<div style="display: inline-block; background: {'#1E293B' if is_dark else '#EEF2FF'}; color: {'#38BDF8' if is_dark else '#4338CA'}; border: 1px solid {'#334155' if is_dark else '#E0E7FF'}; padding: 2px 8px; border-radius: 6px; font-size: 0.74rem; font-weight: 700; text-transform: uppercase; margin-bottom: 8px;">
-Instructor Authentication
+        login_header_html = """<div style="margin-bottom: 14px;">
+<div style="display: inline-block; background: #EEF4FF; color: #2F6FED; border: 1px solid #CFE0FC; padding: 2px 8px; border-radius: 4px; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; margin-bottom: 6px;">
+Faculty Access
 </div>
-<h2 style="font-size: 1.45rem; font-weight: 800; color: {title_color}; margin: 0 0 4px 0;">Teacher Sign In</h2>
-<p style="color: {sub_color}; font-size: 0.88rem; margin: 0;">Access your classroom rosters and take attendance.</p>
-</div>\
-"""), unsafe_allow_html=True)
+<h2 style="font-size: 1.4rem; font-weight: 800; color: #172B4D; margin: 0 0 4px 0;">Teacher Sign In</h2>
+<p style="color: #667085; font-size: 0.88rem; margin: 0;">Access your courses, rosters, and take automated attendance.</p>
+</div>"""
+        st.markdown(login_header_html, unsafe_allow_html=True)
 
         teacher_username = st.text_input("Username", placeholder='e.g. ronakjain')
-        teacher_pass = st.text_input("Password", type='password', placeholder="Enter your password")
+        teacher_pass = st.text_input("Password", type='password', placeholder="Enter password")
 
         st.write("")
         btnc1, btnc2 = st.columns(2)
@@ -501,8 +528,6 @@ Instructor Authentication
                 st.session_state.teacher_login_type = 'register'
                 st.rerun()
 
-    footer_dashboard()
-
 
 def register_teacher(teacher_username, teacher_name, teacher_pass, teacher_pass_confirm):
     if not teacher_username or not teacher_name or not teacher_pass:
@@ -520,32 +545,24 @@ def register_teacher(teacher_username, teacher_name, teacher_pass, teacher_pass_
 
 
 def teacher_screen_register():
-    theme = get_current_theme()
-    is_dark = (theme == "dark")
-    title_color = "#FFFFFF" if is_dark else "#0F172A"
-    sub_color = "#94A3B8" if is_dark else "#475569"
-
-    c1, c2, c3 = st.columns([1.5, 0.7, 0.8], vertical_alignment='center')
+    c1, c2 = st.columns([3, 1], vertical_alignment='center')
     with c1:
-        header_dashboard()
+        header_dashboard(page_title="Instructor Registration")
     with c2:
-        render_theme_toggle('treg_theme_toggle')
-    with c3:
         if st.button("← Home", type='secondary', key='regbackbtn', use_container_width=True):
             st.session_state['login_type'] = None
             st.rerun()
 
     st.write("")
     with st.container(border=True):
-        st.markdown(textwrap.dedent(f"""\
-<div style="margin-bottom: 14px;">
-<div style="display: inline-block; background: {'#1E293B' if is_dark else '#ECFDF5'}; color: {'#4ADE80' if is_dark else '#047857'}; border: 1px solid {'#334155' if is_dark else '#A7F3D0'}; padding: 2px 8px; border-radius: 6px; font-size: 0.74rem; font-weight: 700; text-transform: uppercase; margin-bottom: 8px;">
-New Account Setup
+        reg_html = """<div style="margin-bottom: 14px;">
+<div style="display: inline-block; background: #EAF6ED; color: #218739; border: 1px solid #BFE3C7; padding: 2px 8px; border-radius: 4px; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; margin-bottom: 6px;">
+Account Setup
 </div>
-<h2 style="font-size: 1.45rem; font-weight: 800; color: {title_color}; margin: 0 0 4px 0;">Instructor Registration</h2>
-<p style="color: {sub_color}; font-size: 0.88rem; margin: 0;">Set up your educator account to manage classroom attendance.</p>
-</div>\
-"""), unsafe_allow_html=True)
+<h2 style="font-size: 1.4rem; font-weight: 800; color: #172B4D; margin: 0 0 4px 0;">Instructor Registration</h2>
+<p style="color: #667085; font-size: 0.88rem; margin: 0;">Create educator credentials to manage digital classroom attendance.</p>
+</div>"""
+        st.markdown(reg_html, unsafe_allow_html=True)
 
         teacher_username = st.text_input("Username", placeholder='e.g. ronakjain')
         teacher_name = st.text_input("Full Name", placeholder='e.g. Ronak Jain')
@@ -570,5 +587,3 @@ New Account Setup
             if st.button('Sign In Instead', type="secondary", use_container_width=True):
                 st.session_state.teacher_login_type = 'login'
                 st.rerun()
-
-    footer_dashboard()
