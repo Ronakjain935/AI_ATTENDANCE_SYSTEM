@@ -11,7 +11,22 @@ def subject_card(name, code, section, stats=None, footer_callback=None, progress
     # Statistics string
     stats_text = ""
     if stats:
-        parts = [f"<strong>{label}:</strong> {val}" for _, label, val in stats]
+        parts = []
+        for item in stats:
+            if isinstance(item, (list, tuple)):
+                if len(item) == 3:
+                    _, label, val = item
+                elif len(item) == 2:
+                    label, val = item
+                elif len(item) == 1:
+                    label, val = "Stat", item[0]
+                else:
+                    label, val = "Stat", str(item)
+                parts.append(f"<strong>{label}:</strong> {val}")
+            elif isinstance(item, dict):
+                label = item.get('label', 'Stat')
+                val = item.get('value', item.get('val', ''))
+                parts.append(f"<strong>{label}:</strong> {val}")
         stats_text = " &bull; ".join(parts)
 
     # Progress bar
